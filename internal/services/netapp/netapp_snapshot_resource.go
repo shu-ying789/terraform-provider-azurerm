@@ -194,12 +194,6 @@ func resourceNetAppSnapshotDelete(d *pluginsdk.ResourceData, meta interface{}) e
 	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
 		return fmt.Errorf("waiting for creation/update of %q: %+v", id, err)
 	}
-	// The resource NetApp Snapshot depends on the resource NetApp Volume.
-	// Although the delete API returns 404 which means the NetApp Snapshot resource has been deleted.
-	// Then it tries to immediately delete NetApp Volume but it still throws error `Can not delete resource before nested resources are deleted.`
-	// In this case we're going to re-check status code again.
-	// For more details, see related Bug: https://github.com/Azure/azure-sdk-for-go/issues/11475
-	log.Printf("[DEBUG] Waiting for NetApp Snapshot %q (Resource Group %q) to be deleted", id.Name, id.ResourceGroup)
 
 	return nil
 }
