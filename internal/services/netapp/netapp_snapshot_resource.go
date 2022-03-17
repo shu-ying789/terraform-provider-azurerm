@@ -195,16 +195,3 @@ func resourceNetAppSnapshotDelete(d *pluginsdk.ResourceData, meta interface{}) e
 
 	return nil
 }
-
-//func netappSnapshotDeleteStateRefreshFunc(ctx context.Context, client *netapp.SnapshotsClient, resourceGroupName string, accountName string, poolName string, volumeName string, name string) pluginsdk.StateRefreshFunc {
-//	return func() (interface{}, string, error) {
-//		res, err := client.Get(ctx, resourceGroupName, accountName, poolName, volumeName, name)
-//		if err != nil {
-//			if !utils.ResponseWasNotFound(res.Response) {
-//				return nil, "", fmt.Errorf("retrieving NetApp Snapshot %q (Resource Group %q): %s", name, resourceGroupName, err)
-//			}
-//		}
-//
-//		return res, strconv.Itoa(res.StatusCode), nil
-//	}
-//}
