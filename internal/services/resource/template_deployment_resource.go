@@ -271,10 +271,13 @@ func resourceTemplateDeploymentDelete(d *pluginsdk.ResourceData, meta interface{
 		return err
 	}
 
-	if _, err = client.Delete(ctx, id.ResourceGroup, id.DeploymentName); err != nil {
+	future, err := client.Delete(ctx, id.ResourceGroup, id.DeploymentName)
+	if err != nil {
 		return fmt.Errorf("deleting %s: %+v", id, err)
 	}
-
+	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
+		return fmt.Errorf("waiting for creation/update of %q: %+v", id, err)
+	}
 	if err := waitForTemplateDeploymentToBeDeleted(ctx, client, *id); err != nil {
 		return fmt.Errorf("waiting for deletion of %s: %+v", id, err)
 	}
