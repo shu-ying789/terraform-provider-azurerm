@@ -689,12 +689,9 @@ func resourceNetAppVolumeDelete(d *pluginsdk.ResourceData, meta interface{}) err
 			return fmt.Errorf("deleting replicate %s: %+v", *replicaVolumeId, err)
 		}
 		if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
-			return fmt.Errorf("waiting for creation/update of %q: %+v", id, err)
+			return fmt.Errorf("waiting for deletion of %q: %+v", id, err)
 		}
 		log.Printf("[DEBUG] Waiting for the replica of %s to be deleted", replicaVolumeId)
-		if err := waitForReplicationDeletion(ctx, client, *replicaVolumeId); err != nil {
-			return fmt.Errorf("waiting for the replica %s to be deleted: %+v", *replicaVolumeId, err)
-		}
 	}
 
 	// Deleting volume and waiting for it fo fully complete the operation
@@ -704,7 +701,7 @@ func resourceNetAppVolumeDelete(d *pluginsdk.ResourceData, meta interface{}) err
 		return fmt.Errorf("deleting %s: %+v", *id, err)
 	}
 	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
-		return fmt.Errorf("waiting for creation/update of %q: %+v", id, err)
+		return fmt.Errorf("waiting for deletion of %q: %+v", id, err)
 	}
 	log.Printf("[DEBUG] Waiting for %s to be deleted", *id)
 	if err := waitForVolumeDeletion(ctx, client, *id); err != nil {
@@ -775,29 +772,6 @@ func waitForReplMirrorState(ctx context.Context, client *netapp.VolumesClient, i
 
 	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
 		return fmt.Errorf("waiting for %s to be in the state %q: %+v", id, desiredState, err)
-	}
-
-	return nil
-}
-
-func waitForReplicationDeletion(ctx context.Context, client *netapp.VolumesClient, id parse.VolumeId) error {
-	deadline, ok := ctx.Deadline()
-	if !ok {
-		return fmt.Errorf("context had no deadline")
-	}
-
-	stateConf := &pluginsdk.StateChangeConf{
-		ContinuousTargetOccurence: 5,
-		Delay:                     10 * time.Second,
-		MinTimeout:                10 * time.Second,
-		Pending:                   []string{"200", "202", "400"}, // TODO: Remove 400 when bug is fixed on RP side, where replicationStatus returns 400 while it is in "Deleting" state
-		Target:                    []string{"404"},
-		Refresh:                   netappVolumeReplicationStateRefreshFunc(ctx, client, id),
-		Timeout:                   time.Until(deadline),
-	}
-
-	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
-		return fmt.Errorf("waiting for Replication of %s to be deleted: %+v", id, err)
 	}
 
 	return nil
