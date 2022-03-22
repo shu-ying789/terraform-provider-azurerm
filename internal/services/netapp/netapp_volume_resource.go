@@ -704,9 +704,6 @@ func resourceNetAppVolumeDelete(d *pluginsdk.ResourceData, meta interface{}) err
 		return fmt.Errorf("waiting for deletion of %q: %+v", id, err)
 	}
 	log.Printf("[DEBUG] Waiting for %s to be deleted", *id)
-	if err := waitForVolumeDeletion(ctx, client, *id); err != nil {
-		return fmt.Errorf("waiting for deletion of %s: %+v", *id, err)
-	}
 
 	return nil
 }
@@ -772,28 +769,6 @@ func waitForReplMirrorState(ctx context.Context, client *netapp.VolumesClient, i
 
 	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
 		return fmt.Errorf("waiting for %s to be in the state %q: %+v", id, desiredState, err)
-	}
-
-	return nil
-}
-
-func waitForVolumeDeletion(ctx context.Context, client *netapp.VolumesClient, id parse.VolumeId) error {
-	deadline, ok := ctx.Deadline()
-	if !ok {
-		return fmt.Errorf("context had no deadline")
-	}
-	stateConf := &pluginsdk.StateChangeConf{
-		ContinuousTargetOccurence: 5,
-		Delay:                     10 * time.Second,
-		MinTimeout:                10 * time.Second,
-		Pending:                   []string{"200", "202"},
-		Target:                    []string{"204", "404"},
-		Refresh:                   netappVolumeStateRefreshFunc(ctx, client, id),
-		Timeout:                   time.Until(deadline),
-	}
-
-	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
-		return fmt.Errorf("waiting for %s to be deleted: %+v", id, err)
 	}
 
 	return nil
