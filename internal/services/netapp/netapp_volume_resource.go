@@ -683,7 +683,6 @@ func resourceNetAppVolumeDelete(d *pluginsdk.ResourceData, meta interface{}) err
 		}
 
 		// Deleting replication and waiting for it to fully complete the operation
-
 		future, err := client.DeleteReplication(ctx, replicaVolumeId.ResourceGroup, replicaVolumeId.NetAppAccountName, replicaVolumeId.CapacityPoolName, replicaVolumeId.Name)
 		if err != nil {
 			return fmt.Errorf("deleting replicate %s: %+v", *replicaVolumeId, err)
@@ -695,7 +694,6 @@ func resourceNetAppVolumeDelete(d *pluginsdk.ResourceData, meta interface{}) err
 	}
 
 	// Deleting volume and waiting for it fo fully complete the operation
-
 	future, err := client.Delete(ctx, id.ResourceGroup, id.NetAppAccountName, id.CapacityPoolName, id.Name)
 	if err != nil {
 		return fmt.Errorf("deleting %s: %+v", *id, err)
