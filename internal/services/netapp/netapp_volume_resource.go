@@ -688,10 +688,10 @@ func resourceNetAppVolumeDelete(d *pluginsdk.ResourceData, meta interface{}) err
 		if err != nil {
 			return fmt.Errorf("deleting replicate %s: %+v", *replicaVolumeId, err)
 		}
-		if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
-			return fmt.Errorf("waiting for deletion of %q: %+v", id, err)
-		}
 		log.Printf("[DEBUG] Waiting for the replica of %s to be deleted", replicaVolumeId)
+		if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
+			return fmt.Errorf("waiting for the replica %s to be deleted: %+v", *replicaVolumeId, err)
+		}
 	}
 
 	// Deleting volume and waiting for it fo fully complete the operation
@@ -700,10 +700,10 @@ func resourceNetAppVolumeDelete(d *pluginsdk.ResourceData, meta interface{}) err
 	if err != nil {
 		return fmt.Errorf("deleting %s: %+v", *id, err)
 	}
+	log.Printf("[DEBUG] Waiting for %s to be deleted", *id)
 	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
 		return fmt.Errorf("waiting for deletion of %q: %+v", id, err)
 	}
-	log.Printf("[DEBUG] Waiting for %s to be deleted", *id)
 
 	return nil
 }
