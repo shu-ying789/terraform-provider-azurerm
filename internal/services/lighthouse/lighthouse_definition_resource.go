@@ -192,8 +192,12 @@ func resourceLighthouseDefinitionCreateUpdate(d *pluginsdk.ResourceData, meta in
 		},
 	}
 
-	if _, err := client.CreateOrUpdate(ctx, lighthouseDefinitionID, scope, parameters); err != nil {
+	future, err := client.CreateOrUpdate(ctx, lighthouseDefinitionID, scope, parameters)
+	if err != nil {
 		return fmt.Errorf("Creating/Updating Lighthouse Definition %q (Scope %q): %+v", lighthouseDefinitionID, scope, err)
+	}
+	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
+		return fmt.Errorf("waiting for creation/update of %q(Scope %q): %+v", lighthouseDefinitionID, scope, err)
 	}
 
 	read, err := client.Get(ctx, scope, lighthouseDefinitionID)
