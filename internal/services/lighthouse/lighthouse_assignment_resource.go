@@ -96,8 +96,12 @@ func resourceLighthouseAssignmentCreate(d *pluginsdk.ResourceData, meta interfac
 		},
 	}
 
-	if _, err := client.CreateOrUpdate(ctx, scope, lighthouseAssignmentName, parameters); err != nil {
+	future, err := client.CreateOrUpdate(ctx, scope, lighthouseAssignmentName, parameters)
+	if err != nil {
 		return fmt.Errorf("creating Lighthouse Assignment %q (Scope %q): %+v", lighthouseAssignmentName, scope, err)
+	}
+	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
+		return fmt.Errorf("waiting for creation/update of %q(Scope %q): %+v", lighthouseAssignmentName, scope, err)
 	}
 
 	read, err := client.Get(ctx, scope, lighthouseAssignmentName, utils.Bool(false))
@@ -155,20 +159,12 @@ func resourceLighthouseAssignmentDelete(d *pluginsdk.ResourceData, meta interfac
 		return err
 	}
 
-	if _, err = client.Delete(ctx, id.Scope, id.Name); err != nil {
+	future, err := client.Delete(ctx, id.Scope, id.Name)
+	if err != nil {
 		return fmt.Errorf("deleting Lighthouse Assignment %q at Scope %q: %+v", id.Name, id.Scope, err)
 	}
-
-	stateConf := &pluginsdk.StateChangeConf{
-		Pending:    []string{"Deleting"},
-		Target:     []string{"Deleted"},
-		Refresh:    lighthouseAssignmentDeleteRefreshFunc(ctx, client, id.Scope, id.Name),
-		MinTimeout: 15 * time.Second,
-		Timeout:    d.Timeout(pluginsdk.TimeoutDelete),
-	}
-
-	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
-		return fmt.Errorf("waiting for Lighthouse Assignment %q (Scope %q) to be deleted: %s", id.Name, id.Scope, err)
+	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
+		return fmt.Errorf("waiting for deletion of %q: %+v", id, err)
 	}
 
 	return nil
