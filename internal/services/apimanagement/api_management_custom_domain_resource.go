@@ -153,32 +153,17 @@ func apiManagementCustomDomainCreateUpdate(d *pluginsdk.ResourceData, meta inter
 
 	// Wait for the ProvisioningState to become "Succeeded" before attempting to update
 	log.Printf("[DEBUG] Waiting for %s to become ready", id)
-	stateConf := &pluginsdk.StateChangeConf{
-		Pending:                   []string{"Updating", "Unknown"},
-		Target:                    []string{"Succeeded", "Ready"},
-		Refresh:                   apiManagementRefreshFunc(ctx, client, id.ServiceName, id.ResourceGroup),
-		MinTimeout:                1 * time.Minute,
-		ContinuousTargetOccurence: 6,
-	}
-	if d.IsNewResource() {
-		stateConf.Timeout = d.Timeout(pluginsdk.TimeoutCreate)
-	} else {
-		stateConf.Timeout = d.Timeout(pluginsdk.TimeoutUpdate)
-	}
 
-	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
-		return fmt.Errorf("waiting for %s to become ready: %+v", id, err)
-	}
-
-	if _, err := client.CreateOrUpdate(ctx, id.ResourceGroup, id.ServiceName, existing); err != nil {
+	future, err := client.CreateOrUpdate(ctx, id.ResourceGroup, id.ServiceName, existing)
+	if err != nil {
 		return fmt.Errorf("creating/updating %s: %+v", id, err)
+	}
+	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
+		return fmt.Errorf("waiting for creation/update of %q: %+v", id, err)
 	}
 
 	// Wait for the ProvisioningState to become "Succeeded" before attempting to update
 	log.Printf("[DEBUG] Waiting for %s to become ready", id)
-	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
-		return fmt.Errorf("waiting for %s to become ready: %+v", id, err)
-	}
 	d.SetId(id.ID())
 
 	return apiManagementCustomDomainRead(d, meta)
@@ -249,32 +234,19 @@ func apiManagementCustomDomainDelete(d *pluginsdk.ResourceData, meta interface{}
 
 	// Wait for the ProvisioningState to become "Succeeded" before attempting to update
 	log.Printf("[DEBUG] Waiting for %s to become ready", *id)
-	stateConf := &pluginsdk.StateChangeConf{
-		Pending:                   []string{"Updating", "Unknown"},
-		Target:                    []string{"Succeeded", "Ready"},
-		Refresh:                   apiManagementRefreshFunc(ctx, client, id.ServiceName, id.ResourceGroup),
-		MinTimeout:                1 * time.Minute,
-		Timeout:                   d.Timeout(pluginsdk.TimeoutDelete),
-		ContinuousTargetOccurence: 6,
-	}
-
-	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
-		return fmt.Errorf("waiting for %s to become ready: %+v", *id, err)
-	}
 
 	log.Printf("[DEBUG] Deleting %s", *id)
-
 	resp.ServiceProperties.HostnameConfigurations = nil
-
-	if _, err := client.CreateOrUpdate(ctx, id.ResourceGroup, id.ServiceName, resp); err != nil {
+	future, err := client.CreateOrUpdate(ctx, id.ResourceGroup, id.ServiceName, resp)
+	if err != nil {
 		return fmt.Errorf("deleting %s: %+v", *id, err)
+	}
+	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
+		return fmt.Errorf("waiting for deletion of %q: %+v", id, err)
 	}
 
 	// Wait for the ProvisioningState to become "Succeeded" before attempting to update
 	log.Printf("[DEBUG] Waiting for %s to become ready", *id)
-	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
-		return fmt.Errorf("waiting for %s to become ready: %+v", *id, err)
-	}
 
 	return nil
 }
