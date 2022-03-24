@@ -165,18 +165,6 @@ func apiManagementCustomDomainCreateUpdate(d *pluginsdk.ResourceData, meta inter
 
 	// Wait for the ProvisioningState to become "Succeeded" before attempting to update
 	log.Printf("[DEBUG] Waiting for %s to become ready", id)
-	stateConf := &pluginsdk.StateChangeConf{
-		Pending:                   []string{"Updating", "Unknown"},
-		Target:                    []string{"Succeeded", "Ready"},
-		Refresh:                   apiManagementRefreshFunc(ctx, client, id.ServiceName, id.ResourceGroup),
-		MinTimeout:                1 * time.Minute,
-		ContinuousTargetOccurence: 6,
-	}
-	if d.IsNewResource() {
-		stateConf.Timeout = d.Timeout(pluginsdk.TimeoutCreate)
-	} else {
-		stateConf.Timeout = d.Timeout(pluginsdk.TimeoutUpdate)
-	}
 
 	future, err := client.CreateOrUpdate(ctx, id.ResourceGroup, id.ServiceName, existing)
 	if err != nil {
@@ -266,7 +254,7 @@ func apiManagementCustomDomainDelete(d *pluginsdk.ResourceData, meta interface{}
 		return fmt.Errorf("deleting %s: %+v", *id, err)
 	}
 	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
-		return fmt.Errorf("waiting for creation/update of %q: %+v", id, err)
+		return fmt.Errorf("waiting for deletion of %q: %+v", id, err)
 	}
 
 	// Wait for the ProvisioningState to become "Succeeded" before attempting to update
