@@ -186,7 +186,6 @@ func apiManagementCustomDomainCreateUpdate(d *pluginsdk.ResourceData, meta inter
 	if err != nil {
 		return fmt.Errorf("creating/updating %s: %+v", id, err)
 	}
-
 	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
 		return fmt.Errorf("waiting for creation/update of %q: %+v", id, err)
 	}
@@ -280,14 +279,11 @@ func apiManagementCustomDomainDelete(d *pluginsdk.ResourceData, meta interface{}
 	}
 
 	log.Printf("[DEBUG] Deleting %s", *id)
-
 	resp.ServiceProperties.HostnameConfigurations = nil
-
 	future, err := client.CreateOrUpdate(ctx, id.ResourceGroup, id.ServiceName, resp)
 	if err != nil {
 		return fmt.Errorf("deleting %s: %+v", *id, err)
 	}
-
 	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
 		return fmt.Errorf("waiting for creation/update of %q: %+v", id, err)
 	}
