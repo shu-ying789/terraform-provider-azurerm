@@ -101,21 +101,6 @@ func resourceMariaDbVirtualNetworkRuleCreateUpdate(d *pluginsdk.ResourceData, me
 		return fmt.Errorf("waiting for creation/update of %q: %+v", id, err)
 	}
 
-	// Wait for the provisioning state to become ready
-	log.Printf("[DEBUG] Waiting for %s to become ready", id)
-	stateConf := &pluginsdk.StateChangeConf{
-		Pending:                   []string{"Initializing", "InProgress", "Unknown", "ResponseNotFound"},
-		Target:                    []string{"Ready"},
-		Refresh:                   mariaDbVirtualNetworkStateStatusCodeRefreshFunc(ctx, client, id.ResourceGroup, id.ServerName, id.VirtualNetworkRuleName),
-		MinTimeout:                1 * time.Minute,
-		ContinuousTargetOccurence: 5,
-	}
-	if d.IsNewResource() {
-		stateConf.Timeout = d.Timeout(pluginsdk.TimeoutCreate)
-	} else {
-		stateConf.Timeout = d.Timeout(pluginsdk.TimeoutUpdate)
-	}
-
 	d.SetId(id.ID())
 
 	return resourceMariaDbVirtualNetworkRuleRead(d, meta)
