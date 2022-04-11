@@ -131,7 +131,7 @@ resource "azurerm_api_management_authorization_server" "test" {
   authorization_endpoint       = "https://azacceptance.hashicorptest.com/client/authorize"
   client_id                    = "42424242-4242-4242-4242-424242424242"
   client_registration_endpoint = "https://azacceptance.hashicorptest.com/client/register"
-  description                  = "authorization"
+  description                  = "This is a test description"
 
   token_body_parameter {
     name  = "test"
