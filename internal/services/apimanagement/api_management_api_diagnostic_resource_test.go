@@ -291,7 +291,7 @@ resource "azurerm_api_management_api_diagnostic" "test" {
     data_masking {
       headers {
         mode  = "Mask"
-        value = " backend-Response-Header"
+        value = "backend-Response-Header"
       }
       query_params {
         mode  = "Mask"
