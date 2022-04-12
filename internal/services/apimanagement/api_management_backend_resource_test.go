@@ -361,7 +361,7 @@ func (r ApiManagementAuthorizationBackendResource) serviceFabricCluster(data acc
 %s
 
 resource "azurerm_api_management_certificate" "test" {
-  name                = "example-cert"
+  name                = "acctest-cert-%[2]d"
   api_management_name = azurerm_api_management.test.name
   resource_group_name = azurerm_resource_group.test.name
   data                = filebase64("testdata/keyvaultcert.pfx")
@@ -369,7 +369,7 @@ resource "azurerm_api_management_certificate" "test" {
 }
 
 resource "azurerm_api_management_backend" "test" {
-  name                = "acctestapi-%d"
+  name                = "acctestapi-%[2]d"
   resource_group_name = azurerm_resource_group.test.name
   api_management_name = azurerm_api_management.test.name
   protocol            = "http"
