@@ -129,22 +129,23 @@ provider "azurerm" {
 }
 
 resource "azurerm_resource_group" "test" {
-  name     = "acctestRG-df-%d"
-  location = "%s"
+  name     = "acctestRG-df-%[1]d"
+  location = "%[2]s"
 }
 
 resource "azurerm_data_factory" "test" {
-  name                = "acctestdf%d"
+  name                = "acctestdf%[1]d"
   location            = azurerm_resource_group.test.location
   resource_group_name = azurerm_resource_group.test.name
 }
 
 resource "azurerm_data_factory_linked_service_azure_blob_storage" "test" {
-  name              = "acctestlsblob%d"
+  name              = "acctestlsblob%[1]d"
   data_factory_id   = azurerm_data_factory.test.id
   connection_string = "DefaultEndpointsProtocol=https;AccountName=foo;AccountKey=bar"
+  storage_kind      = "StorageV2"
 }
-`, data.RandomInteger, data.Locations.Primary, data.RandomInteger, data.RandomInteger)
+`, data.RandomInteger, data.Locations.Primary)
 }
 
 func (LinkedServiceAzureBlobStorageResource) update1(data acceptance.TestData) string {

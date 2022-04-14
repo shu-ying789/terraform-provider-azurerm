@@ -35,6 +35,7 @@ resource "azurerm_data_factory_linked_service_azure_blob_storage" "example" {
   name              = "example"
   data_factory_id   = azurerm_data_factory.example.id
   connection_string = data.azurerm_storage_account.example.primary_connection_string
+  storage_kind      = "StorageV2"
 }
 ```
 
