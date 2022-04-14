@@ -35,7 +35,6 @@ resource "azurerm_data_factory_linked_service_azure_blob_storage" "example" {
   name              = "example"
   data_factory_id   = azurerm_data_factory.example.id
   connection_string = data.azurerm_storage_account.example.primary_connection_string
-  storage_kind      = "StorageV2"
 }
 ```
 
@@ -125,6 +124,8 @@ A `key_vault_sas_token` block supports the following:
 * `service_principal_id` - (Optional) The service principal id in which to authenticate against the Azure Blob Storage account. Required if `service_principal_key` is set.
 
 * `service_principal_key` - (Optional) The service principal key in which to authenticate against the AAzure Blob Storage account.  Required if `service_principal_id` is set.
+
+* `storage_kind` - (Optional) The Storage account kind in which to authenticate against the Azure Blob Storage account.
 
 * `tenant_id` - (Optional) The tenant id or name in which to authenticate against the Azure Blob Storage account.
 

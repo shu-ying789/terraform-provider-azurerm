@@ -129,23 +129,22 @@ provider "azurerm" {
 }
 
 resource "azurerm_resource_group" "test" {
-  name     = "acctestRG-df-%[1]d"
-  location = "%[2]s"
+  name     = "acctestRG-df-%d"
+  location = "%s"
 }
 
 resource "azurerm_data_factory" "test" {
-  name                = "acctestdf%[1]d"
+  name                = "acctestdf%d"
   location            = azurerm_resource_group.test.location
   resource_group_name = azurerm_resource_group.test.name
 }
 
 resource "azurerm_data_factory_linked_service_azure_blob_storage" "test" {
-  name              = "acctestlsblob%[1]d"
+  name              = "acctestlsblob%d"
   data_factory_id   = azurerm_data_factory.test.id
   connection_string = "DefaultEndpointsProtocol=https;AccountName=foo;AccountKey=bar"
-  storage_kind      = "StorageV2"
 }
-`, data.RandomInteger, data.Locations.Primary)
+`, data.RandomInteger, data.Locations.Primary, data.RandomInteger, data.RandomInteger)
 }
 
 func (LinkedServiceAzureBlobStorageResource) update1(data acceptance.TestData) string {
@@ -297,6 +296,7 @@ data "azurerm_client_config" "current" {
 resource "azurerm_data_factory_linked_service_azure_blob_storage" "test" {
   name            = "acctestBlobStorage%d"
   data_factory_id = azurerm_data_factory.test.id
+  storage_kind    = "StorageV2"
   sas_uri         = "https://storageaccountname.blob.core.windows.net/sascontainer/sasblob.txt?sv=2019-02-02&st=2019-04-29T22:18:26Z&se=2019-04-30T02:23:26Z&sr=b&sp=rw&sip=168.1.5.60-168.1.5.70&spr=https&sig=koLniLcK0tMLuMfYeuSQwB+BLnWibhPqnrINxaIRbvU<"
 }
 `, data.RandomInteger, data.Locations.Primary, data.RandomInteger, data.RandomInteger)
