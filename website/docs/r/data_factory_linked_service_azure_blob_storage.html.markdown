@@ -127,8 +127,6 @@ A `key_vault_sas_token` block supports the following:
 
 * `storage_kind` - (Optional) AccountKind - Specify the kind of your storage account. Allowed values are: Storage (general purpose v1), StorageV2 (general purpose v2), BlobStorage, or BlockBlobStorage. Type: string (or Expression with resultType string).
 
-* `storage_kind` - (Optional) The Storage account kind in which to authenticate against the Azure Blob Storage account.
-
 * `tenant_id` - (Optional) The tenant id or name in which to authenticate against the Azure Blob Storage account.
 
 ## Attributes Reference

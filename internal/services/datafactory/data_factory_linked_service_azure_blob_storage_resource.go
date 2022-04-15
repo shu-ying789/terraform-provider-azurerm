@@ -63,6 +63,8 @@ func resourceDataFactoryLinkedServiceAzureBlobStorage() *pluginsdk.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"Storage",
 					"StorageV2",
+					"BlobStorage",
+					"BlockBlobStorage",
 				}, false),
 			},
 
