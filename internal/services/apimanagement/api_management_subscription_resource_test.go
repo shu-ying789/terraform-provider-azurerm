@@ -248,6 +248,8 @@ resource "azurerm_api_management_subscription" "test" {
   display_name        = "Butter Parser API Enterprise Edition"
   state               = "active"
   allow_tracing       = false
+  primary_key         = "This is a test primary key"
+  secondary_key       = "This is a test secondary key"
 }
 `, r.template(data))
 }
