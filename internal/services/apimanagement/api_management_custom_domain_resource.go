@@ -51,9 +51,8 @@ func resourceApiManagementCustomDomain() *pluginsdk.Resource {
 				"management": {
 					Type:     pluginsdk.TypeList,
 					Optional: true,
-					// TODO 3.0 - Remove 3.0 flag for this and all other properties in the schema
 					AtLeastOneOf: func() []string {
-						if !features.ThreePointOh() {
+						if !features.ThreePointOhBeta() {
 							return []string{"management", "portal", "developer_portal", "proxy", "scm"}
 						}
 						return []string{"management", "portal", "developer_portal", "gateway", "scm"}
@@ -66,7 +65,7 @@ func resourceApiManagementCustomDomain() *pluginsdk.Resource {
 					Type:     pluginsdk.TypeList,
 					Optional: true,
 					AtLeastOneOf: func() []string {
-						if !features.ThreePointOh() {
+						if !features.ThreePointOhBeta() {
 							return []string{"management", "portal", "developer_portal", "proxy", "scm"}
 						}
 						return []string{"management", "portal", "developer_portal", "gateway", "scm"}
@@ -79,7 +78,7 @@ func resourceApiManagementCustomDomain() *pluginsdk.Resource {
 					Type:     pluginsdk.TypeList,
 					Optional: true,
 					AtLeastOneOf: func() []string {
-						if !features.ThreePointOh() {
+						if !features.ThreePointOhBeta() {
 							return []string{"management", "portal", "developer_portal", "proxy", "scm"}
 						}
 						return []string{"management", "portal", "developer_portal", "gateway", "scm"}
@@ -92,7 +91,7 @@ func resourceApiManagementCustomDomain() *pluginsdk.Resource {
 					Type:     pluginsdk.TypeList,
 					Optional: true,
 					AtLeastOneOf: func() []string {
-						if !features.ThreePointOh() {
+						if !features.ThreePointOhBeta() {
 							return []string{"management", "portal", "developer_portal", "proxy", "scm"}
 						}
 						return []string{"management", "portal", "developer_portal", "gateway", "scm"}
@@ -102,31 +101,20 @@ func resourceApiManagementCustomDomain() *pluginsdk.Resource {
 					},
 				},
 			}
-			// TODO 3.0 - Remove anonymous func for Schema and remove `proxy` block
-			if features.ThreePointOh() {
+			if features.ThreePointOhBeta() {
 				rSchema["gateway"] = &pluginsdk.Schema{
-					Type:     pluginsdk.TypeList,
-					Optional: true,
-					AtLeastOneOf: func() []string {
-						if !features.ThreePointOh() {
-							return []string{"management", "portal", "developer_portal", "proxy", "scm"}
-						}
-						return []string{"management", "portal", "developer_portal", "gateway", "scm"}
-					}(),
+					Type:         pluginsdk.TypeList,
+					Optional:     true,
+					AtLeastOneOf: []string{"management", "portal", "developer_portal", "gateway", "scm"},
 					Elem: &pluginsdk.Resource{
 						Schema: apiManagementResourceHostnameProxySchema(),
 					},
 				}
 			} else {
 				rSchema["proxy"] = &pluginsdk.Schema{
-					Type:     pluginsdk.TypeList,
-					Optional: true,
-					AtLeastOneOf: func() []string {
-						if !features.ThreePointOh() {
-							return []string{"management", "portal", "developer_portal", "proxy", "scm"}
-						}
-						return []string{"management", "portal", "developer_portal", "gateway", "scm"}
-					}(),
+					Type:         pluginsdk.TypeList,
+					Optional:     true,
+					AtLeastOneOf: []string{"management", "portal", "developer_portal", "proxy", "scm"},
 					Elem: &pluginsdk.Resource{
 						Schema: apiManagementResourceHostnameProxySchema(),
 					},
@@ -165,7 +153,37 @@ func apiManagementCustomDomainCreateUpdate(d *pluginsdk.ResourceData, meta inter
 
 	// Wait for the ProvisioningState to become "Succeeded" before attempting to update
 	log.Printf("[DEBUG] Waiting for %s to become ready", id)
+	stateConf := &pluginsdk.StateChangeConf{
+		Pending:                   []string{"Updating", "Unknown"},
+		Target:                    []string{"Succeeded", "Ready"},
+		Refresh:                   apiManagementRefreshFunc(ctx, client, id.ServiceName, id.ResourceGroup),
+		MinTimeout:                1 * time.Minute,
+		ContinuousTargetOccurence: 6,
+	}
+	if d.IsNewResource() {
+		stateConf.Timeout = d.Timeout(pluginsdk.TimeoutCreate)
+	} else {
+		stateConf.Timeout = d.Timeout(pluginsdk.TimeoutUpdate)
+	}
 
+	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
+		return fmt.Errorf("waiting for %s to become ready: %+v", id, err)
+	}
+
+	// The API expects user assigned identities to be submitted with nil values
+	if existing.Identity != nil {
+		for k, v := range existing.Identity.UserAssignedIdentities {
+			if v == nil {
+				continue
+			}
+			existing.Identity.UserAssignedIdentities[k].ClientID = nil
+			existing.Identity.UserAssignedIdentities[k].PrincipalID = nil
+		}
+	}
+
+	//if _, err := client.CreateOrUpdate(ctx, id.ResourceGroup, id.ServiceName, existing); err != nil {
+	//	return fmt.Errorf("creating/updating %s: %+v", id, err)
+	//}
 	future, err := client.CreateOrUpdate(ctx, id.ResourceGroup, id.ServiceName, existing)
 	if err != nil {
 		return fmt.Errorf("creating/updating %s: %+v", id, err)
@@ -176,6 +194,9 @@ func apiManagementCustomDomainCreateUpdate(d *pluginsdk.ResourceData, meta inter
 
 	// Wait for the ProvisioningState to become "Succeeded" before attempting to update
 	log.Printf("[DEBUG] Waiting for %s to become ready", id)
+	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
+		return fmt.Errorf("waiting for %s to become ready: %+v", id, err)
+	}
 	d.SetId(id.ID())
 
 	return apiManagementCustomDomainRead(d, meta)
@@ -246,9 +267,26 @@ func apiManagementCustomDomainDelete(d *pluginsdk.ResourceData, meta interface{}
 
 	// Wait for the ProvisioningState to become "Succeeded" before attempting to update
 	log.Printf("[DEBUG] Waiting for %s to become ready", *id)
+	stateConf := &pluginsdk.StateChangeConf{
+		Pending:                   []string{"Updating", "Unknown"},
+		Target:                    []string{"Succeeded", "Ready"},
+		Refresh:                   apiManagementRefreshFunc(ctx, client, id.ServiceName, id.ResourceGroup),
+		MinTimeout:                1 * time.Minute,
+		Timeout:                   d.Timeout(pluginsdk.TimeoutDelete),
+		ContinuousTargetOccurence: 6,
+	}
+
+	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
+		return fmt.Errorf("waiting for %s to become ready: %+v", *id, err)
+	}
 
 	log.Printf("[DEBUG] Deleting %s", *id)
+
 	resp.ServiceProperties.HostnameConfigurations = nil
+
+	//if _, err := client.CreateOrUpdate(ctx, id.ResourceGroup, id.ServiceName, resp); err != nil {
+	//	return fmt.Errorf("deleting %s: %+v", *id, err)
+	//}
 	future, err := client.CreateOrUpdate(ctx, id.ResourceGroup, id.ServiceName, resp)
 	if err != nil {
 		return fmt.Errorf("deleting %s: %+v", *id, err)
@@ -259,6 +297,9 @@ func apiManagementCustomDomainDelete(d *pluginsdk.ResourceData, meta interface{}
 
 	// Wait for the ProvisioningState to become "Succeeded" before attempting to update
 	log.Printf("[DEBUG] Waiting for %s to become ready", *id)
+	if _, err = stateConf.WaitForStateContext(ctx); err != nil {
+		return fmt.Errorf("waiting for %s to become ready: %+v", *id, err)
+	}
 
 	return nil
 }
@@ -290,8 +331,7 @@ func expandApiManagementCustomDomains(input *pluginsdk.ResourceData) *[]apimanag
 			results = append(results, output)
 		}
 	}
-	// TODO 3.0 - Simplify and remove `proxy`
-	if features.ThreePointOh() {
+	if features.ThreePointOhBeta() {
 		if gatewayRawVal, ok := input.GetOk("gateway"); ok {
 			vs := gatewayRawVal.([]interface{})
 			for _, rawVal := range vs {
@@ -367,8 +407,7 @@ func flattenApiManagementHostnameConfiguration(input *[]apimanagement.HostnameCo
 				output["default_ssl_binding"] = *config.DefaultSslBinding
 			}
 			gatewayResults = append(gatewayResults, output)
-			// TODO 3.0 - Remove `proxy`
-			if features.ThreePointOh() {
+			if features.ThreePointOhBeta() {
 				configType = "gateway"
 			} else {
 				configType = "proxy"
@@ -406,8 +445,7 @@ func flattenApiManagementHostnameConfiguration(input *[]apimanagement.HostnameCo
 		"scm":              scmResults,
 	}
 
-	// TODO 3.0 - Simplify and remove `proxy`
-	if features.ThreePointOh() {
+	if features.ThreePointOhBeta() {
 		res["gateway"] = gatewayResults
 	} else {
 		res["proxy"] = gatewayResults
