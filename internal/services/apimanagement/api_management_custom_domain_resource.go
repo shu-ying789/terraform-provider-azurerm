@@ -181,9 +181,6 @@ func apiManagementCustomDomainCreateUpdate(d *pluginsdk.ResourceData, meta inter
 		}
 	}
 
-	//if _, err := client.CreateOrUpdate(ctx, id.ResourceGroup, id.ServiceName, existing); err != nil {
-	//	return fmt.Errorf("creating/updating %s: %+v", id, err)
-	//}
 	future, err := client.CreateOrUpdate(ctx, id.ResourceGroup, id.ServiceName, existing)
 	if err != nil {
 		return fmt.Errorf("creating/updating %s: %+v", id, err)
@@ -283,10 +280,7 @@ func apiManagementCustomDomainDelete(d *pluginsdk.ResourceData, meta interface{}
 	log.Printf("[DEBUG] Deleting %s", *id)
 
 	resp.ServiceProperties.HostnameConfigurations = nil
-
-	//if _, err := client.CreateOrUpdate(ctx, id.ResourceGroup, id.ServiceName, resp); err != nil {
-	//	return fmt.Errorf("deleting %s: %+v", *id, err)
-	//}
+	
 	future, err := client.CreateOrUpdate(ctx, id.ResourceGroup, id.ServiceName, resp)
 	if err != nil {
 		return fmt.Errorf("deleting %s: %+v", *id, err)
