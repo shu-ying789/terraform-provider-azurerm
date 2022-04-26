@@ -293,6 +293,15 @@ func (r ApiManagementApiOperationResource) requestRepresentation(data acceptance
 	return fmt.Sprintf(`
 %s
 
+resource "azurerm_api_management_api_schema" "test" {
+  api_name            = azurerm_api_management_api.test.name
+  api_management_name = azurerm_api_management_api.test.api_management_name
+  resource_group_name = azurerm_api_management_api.test.resource_group_name
+  schema_id           = "acctestSchema%d"
+  content_type        = "application/vnd.ms-azure-apim.swagger.definitions+json"
+  value               = file("testdata/api_management_api_schema_swagger.json")
+}
+
 resource "azurerm_api_management_api_operation" "test" {
   operation_id        = "acctest-operation"
   api_name            = azurerm_api_management_api.test.name
@@ -309,10 +318,11 @@ resource "azurerm_api_management_api_operation" "test" {
     representation {
       content_type = "application/json"
       type_name    = "User"
+	  schema_id    = azurerm_api_management_api_schema.test.schema_id
     }
   }
 }
-`, r.template(data))
+`, r.template(data), data.RandomInteger)
 }
 
 func (r ApiManagementApiOperationResource) requestRepresentationUpdated(data acceptance.TestData) string {
@@ -408,6 +418,15 @@ func (r ApiManagementApiOperationResource) representation(data acceptance.TestDa
 	return fmt.Sprintf(`
 %s
 
+resource "azurerm_api_management_api_schema" "test" {
+  api_name            = azurerm_api_management_api.test.name
+  api_management_name = azurerm_api_management_api.test.api_management_name
+  resource_group_name = azurerm_api_management_api.test.resource_group_name
+  schema_id           = "acctestSchema%d"
+  content_type        = "application/vnd.ms-azure-apim.swagger.definitions+json"
+  value               = file("testdata/api_management_api_schema_swagger.json")
+}
+
 resource "azurerm_api_management_api_operation" "test" {
   operation_id        = "acctest-operation"
   api_name            = azurerm_api_management_api.test.name
@@ -434,6 +453,7 @@ resource "azurerm_api_management_api_operation" "test" {
     representation {
       content_type = "application/xml"
       type_name    = "User"
+      schema_id    = azurerm_api_management_api_schema.test.schema_id
 
       example {
         name  = "sample"
@@ -452,7 +472,7 @@ SAMPLE
     }
   }
 }
-`, r.template(data))
+`, r.template(data), data.RandomInteger)
 }
 
 func (r ApiManagementApiOperationResource) representationUpdated(data acceptance.TestData) string {
