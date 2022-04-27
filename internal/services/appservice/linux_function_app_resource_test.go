@@ -417,13 +417,13 @@ func TestAccLinuxFunctionApp_withAuthSettingsStandard(t *testing.T) {
 	})
 }
 
-func TestAccLinuxFunctionApp_scmIpRestrictionVirtual(t *testing.T) {
+func TestAccLinuxFunctionApp_scmIpRestrictionSubnet(t *testing.T) {
 	data := acceptance.BuildTestData(t, "azurerm_linux_function_app", "test")
 	r := LinuxFunctionAppResource{}
 
 	data.ResourceTest(t, r, []acceptance.TestStep{
 		{
-			Config: r.scmIpRestrictionVirtual(data, SkuStandardPlan),
+			Config: r.scmIpRestrictionSubnet(data, SkuStandardPlan),
 			Check: acceptance.ComposeTestCheckFunc(
 				check.That(data.ResourceName).ExistsInAzure(r),
 			),
@@ -2274,7 +2274,7 @@ resource "azurerm_linux_function_app" "test" {
 `, r.templateServicePlanUpdate(data, planSku), data.RandomInteger)
 }
 
-func (r LinuxFunctionAppResource) scmIpRestrictionVirtual(data acceptance.TestData, planSku string) string {
+func (r LinuxFunctionAppResource) scmIpRestrictionSubnet(data acceptance.TestData, planSku string) string {
 	return fmt.Sprintf(`
 provider "azurerm" {
   features {}
