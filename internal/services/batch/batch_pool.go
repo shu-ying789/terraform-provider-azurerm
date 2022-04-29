@@ -460,13 +460,9 @@ func ExpandBatchPoolStartTask(list []interface{}) (*batch.StartTask, error) {
 			}
 		}
 	}
-	if userIdentity.AutoUser == nil {
-		if userNameValue, ok := userIdentityValue["user_name"]; ok {
-			userName := userNameValue.(string)
-			userIdentity.UserName = &userName
-		} else {
-			return nil, fmt.Errorf("either auto_user or user_name should be specified for Batch pool start task")
-		}
+	if userNameValue, ok := userIdentityValue["user_name"]; ok {
+		userName := userNameValue.(string)
+		userIdentity.UserName = &userName
 	}
 
 	resourceFileList := startTaskValue["resource_file"].([]interface{})
