@@ -54,6 +54,12 @@ func resourceDataFactoryDataFlow() *pluginsdk.Resource {
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 
+			"scriptLines": {
+				Type:         pluginsdk.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+
 			"source": SchemaForDataFlowSourceAndSink(),
 
 			"sink": SchemaForDataFlowSourceAndSink(),
@@ -73,6 +79,64 @@ func resourceDataFactoryDataFlow() *pluginsdk.Resource {
 							Type:         pluginsdk.TypeString,
 							Optional:     true,
 							ValidateFunc: validation.StringIsNotEmpty,
+						},
+
+						"dataset": {
+							Type:     pluginsdk.TypeList,
+							Optional: true,
+							MaxItems: 1,
+							Elem: &pluginsdk.Resource{
+								Schema: map[string]*pluginsdk.Schema{
+									"parameters": {
+										Type:     pluginsdk.TypeMap,
+										Optional: true,
+										Elem: &pluginsdk.Schema{
+											Type: pluginsdk.TypeString,
+										},
+									},
+
+									"referenceName": {
+										Type:         pluginsdk.TypeString,
+										Required:     true,
+										ValidateFunc: validation.StringIsNotEmpty,
+									},
+
+									"type": {
+										Type:         pluginsdk.TypeString,
+										Required:     true,
+										ValidateFunc: validation.StringIsNotEmpty,
+									},
+								},
+							},
+						},
+
+						"linked_service": {
+							Type:     pluginsdk.TypeList,
+							Optional: true,
+							MaxItems: 1,
+							Elem: &pluginsdk.Resource{
+								Schema: map[string]*pluginsdk.Schema{
+									"parameters": {
+										Type:     pluginsdk.TypeMap,
+										Optional: true,
+										Elem: &pluginsdk.Schema{
+											Type: pluginsdk.TypeString,
+										},
+									},
+
+									"referenceName": {
+										Type:         pluginsdk.TypeString,
+										Required:     true,
+										ValidateFunc: validation.StringIsNotEmpty,
+									},
+
+									"type": {
+										Type:         pluginsdk.TypeString,
+										Required:     true,
+										ValidateFunc: validation.StringIsNotEmpty,
+									},
+								},
+							},
 						},
 					},
 				},
@@ -189,6 +253,8 @@ func resourceDataFactoryDataFlowRead(d *pluginsdk.ResourceData, meta interface{}
 	d.Set("name", id.Name)
 	d.Set("data_factory_id", parse.NewDataFactoryID(id.SubscriptionId, id.ResourceGroup, id.FactoryName).ID())
 	d.Set("description", mappingDataFlow.Description)
+	d.Set("dataset", mappingDataFlow.Transformations)
+	d.Set("linked_service", mappingDataFlow.Transformations)
 
 	if err := d.Set("annotations", flattenDataFactoryAnnotations(mappingDataFlow.Annotations)); err != nil {
 		return fmt.Errorf("setting `annotations`: %+v", err)
@@ -202,6 +268,7 @@ func resourceDataFactoryDataFlowRead(d *pluginsdk.ResourceData, meta interface{}
 
 	if prop := mappingDataFlow.MappingDataFlowTypeProperties; prop != nil {
 		d.Set("script", prop.Script)
+		d.Set("scriptLines", prop.ScriptLines)
 
 		if err := d.Set("source", flattenDataFactoryDataFlowSource(prop.Sources)); err != nil {
 			return fmt.Errorf("setting `source`: %+v", err)
@@ -243,8 +310,10 @@ func expandDataFactoryDataFlowTransformation(input []interface{}) *[]datafactory
 	for _, v := range input {
 		raw := v.(map[string]interface{})
 		result = append(result, datafactory.Transformation{
-			Description: utils.String(raw["description"].(string)),
-			Name:        utils.String(raw["name"].(string)),
+			Description:   utils.String(raw["description"].(string)),
+			Name:          utils.String(raw["name"].(string)),
+			Dataset:       expandDataFactoryDatasetReference(raw["dataset"].([]interface{})),
+			LinkedService: expandDataFactoryLinkedServiceReference(raw["linked_service"].([]interface{})),
 		})
 	}
 	return &result
@@ -266,8 +335,10 @@ func flattenDataFactoryDataFlowTransformation(input *[]datafactory.Transformatio
 			description = *v.Description
 		}
 		result = append(result, map[string]interface{}{
-			"name":        name,
-			"description": description,
+			"name":           name,
+			"description":    description,
+			"dataset":        flattenDataFactoryDatasetReference(v.Dataset),
+			"linked_service": flattenDataFactoryLinkedServiceReference(v.LinkedService),
 		})
 	}
 	return result
