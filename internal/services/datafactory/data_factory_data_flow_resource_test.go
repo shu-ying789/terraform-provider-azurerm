@@ -179,7 +179,6 @@ resource "azurerm_data_factory_data_flow" "test" {
   description     = "description for data flow"
   annotations     = ["anno1", "anno2"]
   folder          = "folder1"
-  script_lines    = ["test1", "test2"]
 
   source {
     name        = "source1"
@@ -237,6 +236,50 @@ resource "azurerm_data_factory_data_flow" "test" {
       }
     }
   }
+
+  script_lines = [<<EOT
+source(output(
+		movie as string,
+		title as string,
+		genres as string,
+		year as string,
+		Rating as string,
+		{Rotton Tomato} as string
+	),
+	allowSchemaDrift: true,
+	validateSchema: false,
+	limit: 100,
+	ignoreNoFilesFound: false) ~> source1
+source1 filter(toInteger(year) >= 1910 && toInteger(year) <= 2000) ~> Filter1
+Filter1 sink(allowSchemaDrift: true,
+	validateSchema: false,
+	skipDuplicateMapInputs: true,
+	skipDuplicateMapOutputs: true,
+	saveOrder: 0,
+	partitionBy('roundRobin', 3)) ~> sink1
+EOT,
+<<EOT
+source(output(
+		movie as string,
+		title as string,
+		genres as string,
+		year as string,
+		Rating as string,
+		{Rotton Tomato} as string
+	),
+	allowSchemaDrift: true,
+	validateSchema: false,
+	limit: 100,
+	ignoreNoFilesFound: false) ~> source1
+source1 filter(toInteger(year) >= 1910 && toInteger(year) <= 2000) ~> Filter1
+Filter1 sink(allowSchemaDrift: true,
+	validateSchema: false,
+	skipDuplicateMapInputs: true,
+	skipDuplicateMapOutputs: true,
+	saveOrder: 0,
+	partitionBy('roundRobin', 3)) ~> sink1
+EOT
+  ]
 
   script = <<EOT
 source(output(
