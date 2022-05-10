@@ -54,93 +54,19 @@ func resourceDataFactoryDataFlow() *pluginsdk.Resource {
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 
-			"scriptLines": {
-				Type:         pluginsdk.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringIsNotEmpty,
+			"script_lines": {
+				Type:     pluginsdk.TypeList,
+				Optional: true,
+				Elem: &pluginsdk.Schema{
+					Type: pluginsdk.TypeString,
+				},
 			},
 
 			"source": SchemaForDataFlowSourceAndSink(),
 
 			"sink": SchemaForDataFlowSourceAndSink(),
 
-			"transformation": {
-				Type:     pluginsdk.TypeList,
-				Optional: true,
-				Elem: &pluginsdk.Resource{
-					Schema: map[string]*pluginsdk.Schema{
-						"name": {
-							Type:         pluginsdk.TypeString,
-							Required:     true,
-							ValidateFunc: validation.StringIsNotEmpty,
-						},
-
-						"description": {
-							Type:         pluginsdk.TypeString,
-							Optional:     true,
-							ValidateFunc: validation.StringIsNotEmpty,
-						},
-
-						"dataset": {
-							Type:     pluginsdk.TypeList,
-							Optional: true,
-							MaxItems: 1,
-							Elem: &pluginsdk.Resource{
-								Schema: map[string]*pluginsdk.Schema{
-									"parameters": {
-										Type:     pluginsdk.TypeMap,
-										Optional: true,
-										Elem: &pluginsdk.Schema{
-											Type: pluginsdk.TypeString,
-										},
-									},
-
-									"referenceName": {
-										Type:         pluginsdk.TypeString,
-										Required:     true,
-										ValidateFunc: validation.StringIsNotEmpty,
-									},
-
-									"type": {
-										Type:         pluginsdk.TypeString,
-										Required:     true,
-										ValidateFunc: validation.StringIsNotEmpty,
-									},
-								},
-							},
-						},
-
-						"linked_service": {
-							Type:     pluginsdk.TypeList,
-							Optional: true,
-							MaxItems: 1,
-							Elem: &pluginsdk.Resource{
-								Schema: map[string]*pluginsdk.Schema{
-									"parameters": {
-										Type:     pluginsdk.TypeMap,
-										Optional: true,
-										Elem: &pluginsdk.Schema{
-											Type: pluginsdk.TypeString,
-										},
-									},
-
-									"referenceName": {
-										Type:         pluginsdk.TypeString,
-										Required:     true,
-										ValidateFunc: validation.StringIsNotEmpty,
-									},
-
-									"type": {
-										Type:         pluginsdk.TypeString,
-										Required:     true,
-										ValidateFunc: validation.StringIsNotEmpty,
-									},
-								},
-							},
-						},
-					},
-				},
-			},
+			"transformation": SchemaForDataFlowSourceTransformation(),
 
 			"annotations": {
 				Type:     pluginsdk.TypeList,
@@ -212,6 +138,10 @@ func resourceDataFactoryDataFlowCreateUpdate(d *pluginsdk.ResourceData, meta int
 		}
 	}
 
+	if v, ok := d.GetOk("script_lines"); ok {
+		mappingDataFlow.ScriptLines = utils.ExpandStringSlice(v.([]interface{}))
+	}
+
 	dataFlow := datafactory.DataFlowResource{
 		Properties: &mappingDataFlow,
 	}
@@ -253,8 +183,6 @@ func resourceDataFactoryDataFlowRead(d *pluginsdk.ResourceData, meta interface{}
 	d.Set("name", id.Name)
 	d.Set("data_factory_id", parse.NewDataFactoryID(id.SubscriptionId, id.ResourceGroup, id.FactoryName).ID())
 	d.Set("description", mappingDataFlow.Description)
-	d.Set("dataset", mappingDataFlow.Transformations)
-	d.Set("linked_service", mappingDataFlow.Transformations)
 
 	if err := d.Set("annotations", flattenDataFactoryAnnotations(mappingDataFlow.Annotations)); err != nil {
 		return fmt.Errorf("setting `annotations`: %+v", err)
@@ -268,7 +196,7 @@ func resourceDataFactoryDataFlowRead(d *pluginsdk.ResourceData, meta interface{}
 
 	if prop := mappingDataFlow.MappingDataFlowTypeProperties; prop != nil {
 		d.Set("script", prop.Script)
-		d.Set("scriptLines", prop.ScriptLines)
+		d.Set("script_lines", prop.ScriptLines)
 
 		if err := d.Set("source", flattenDataFactoryDataFlowSource(prop.Sources)); err != nil {
 			return fmt.Errorf("setting `source`: %+v", err)

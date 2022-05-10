@@ -98,6 +98,74 @@ func SchemaForDataFlowSourceAndSink() *pluginsdk.Schema {
 	}
 }
 
+func SchemaForDataFlowSourceTransformation() *pluginsdk.Schema {
+	return &pluginsdk.Schema{
+		Type:     pluginsdk.TypeList,
+		Required: true,
+		Elem: &pluginsdk.Resource{
+			Schema: map[string]*pluginsdk.Schema{
+				"name": {
+					Type:         pluginsdk.TypeString,
+					Required:     true,
+					ValidateFunc: validation.StringIsNotEmpty,
+				},
+
+				"description": {
+					Type:         pluginsdk.TypeString,
+					Optional:     true,
+					ValidateFunc: validation.StringIsNotEmpty,
+				},
+
+				"dataset": {
+					Type:     pluginsdk.TypeList,
+					Optional: true,
+					MaxItems: 1,
+					Elem: &pluginsdk.Resource{
+						Schema: map[string]*pluginsdk.Schema{
+							"name": {
+								Type:         pluginsdk.TypeString,
+								Required:     true,
+								ValidateFunc: validation.StringIsNotEmpty,
+							},
+
+							"parameters": {
+								Type:     pluginsdk.TypeMap,
+								Optional: true,
+								Elem: &pluginsdk.Schema{
+									Type: pluginsdk.TypeString,
+								},
+							},
+						},
+					},
+				},
+
+				"linked_service": {
+					Type:     pluginsdk.TypeList,
+					Optional: true,
+					MaxItems: 1,
+					Elem: &pluginsdk.Resource{
+						Schema: map[string]*pluginsdk.Schema{
+							"name": {
+								Type:         pluginsdk.TypeString,
+								Required:     true,
+								ValidateFunc: validation.StringIsNotEmpty,
+							},
+
+							"parameters": {
+								Type:     pluginsdk.TypeMap,
+								Optional: true,
+								Elem: &pluginsdk.Schema{
+									Type: pluginsdk.TypeString,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 func expandDataFactoryDataFlowSource(input []interface{}) *[]datafactory.DataFlowSource {
 	if len(input) == 0 || input[0] == nil {
 		return nil

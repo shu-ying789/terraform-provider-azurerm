@@ -127,6 +127,14 @@ resource "azurerm_data_factory_data_flow" "test" {
     }
   }
 
+  transformation {
+    name        = "filter1"
+    description = "description for filter1"
+    linked_service {
+      name = azurerm_data_factory_linked_custom_service.test.name
+    }
+  }
+
   script = <<EOT
 source(
   allowSchemaDrift: true, 
@@ -165,6 +173,14 @@ resource "azurerm_data_factory_data_flow" "import" {
       name = azurerm_data_factory_data_flow.test.sink.0.linked_service.0.name
     }
   }
+
+  transformation {
+    name        = "filter1"
+    description = "description for filter1"
+    linked_service {
+      name = azurerm_data_factory_linked_custom_service.test.name
+    }
+  }
 }
 `, r.basic(data))
 }
@@ -179,6 +195,7 @@ resource "azurerm_data_factory_data_flow" "test" {
   description     = "description for data flow"
   annotations     = ["anno1", "anno2"]
   folder          = "folder1"
+  script_lines    = ["test1", "test2"]
 
   source {
     name        = "source1"
@@ -221,6 +238,20 @@ resource "azurerm_data_factory_data_flow" "test" {
   transformation {
     name        = "filter1"
     description = "description for filter1"
+
+    dataset {
+      name = azurerm_data_factory_dataset_json.test1.name
+      parameters = {
+        "Key1" = "value1"
+      }
+    }
+
+    linked_service {
+      name = azurerm_data_factory_linked_custom_service.test.name
+      parameters = {
+        "Key1" = "value1"
+      }
+    }
   }
 
   script = <<EOT
