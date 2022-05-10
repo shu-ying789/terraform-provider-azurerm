@@ -101,7 +101,7 @@ func SchemaForDataFlowSourceAndSink() *pluginsdk.Schema {
 func SchemaForDataFlowSourceTransformation() *pluginsdk.Schema {
 	return &pluginsdk.Schema{
 		Type:     pluginsdk.TypeList,
-		Required: true,
+		Optional: true,
 		Elem: &pluginsdk.Resource{
 			Schema: map[string]*pluginsdk.Schema{
 				"name": {
@@ -204,6 +204,24 @@ func expandDataFactoryDataFlowSink(input []interface{}) *[]datafactory.DataFlowS
 	return &result
 }
 
+func expandDataFactoryDataFlowTransformation(input []interface{}) *[]datafactory.Transformation {
+	if len(input) == 0 || input[0] == nil {
+		return nil
+	}
+
+	result := make([]datafactory.Transformation, 0)
+	for _, v := range input {
+		raw := v.(map[string]interface{})
+		result = append(result, datafactory.Transformation{
+			Description:   utils.String(raw["description"].(string)),
+			Name:          utils.String(raw["name"].(string)),
+			Dataset:       expandDataFactoryDatasetReference(raw["dataset"].([]interface{})),
+			LinkedService: expandDataFactoryLinkedServiceReference(raw["linked_service"].([]interface{})),
+		})
+	}
+	return &result
+}
+
 func expandDataFactoryDatasetReference(input []interface{}) *datafactory.DatasetReference {
 	if len(input) == 0 || input[0] == nil {
 		return nil
@@ -277,6 +295,31 @@ func flattenDataFactoryDataFlowSink(input *[]datafactory.DataFlowSink) []interfa
 			"dataset":               flattenDataFactoryDatasetReference(v.Dataset),
 			"linked_service":        flattenDataFactoryLinkedServiceReference(v.LinkedService),
 			"schema_linked_service": flattenDataFactoryLinkedServiceReference(v.SchemaLinkedService),
+		})
+	}
+	return result
+}
+
+func flattenDataFactoryDataFlowTransformation(input *[]datafactory.Transformation) []interface{} {
+	if input == nil {
+		return []interface{}{}
+	}
+
+	result := make([]interface{}, 0)
+	for _, v := range *input {
+		name := ""
+		description := ""
+		if v.Name != nil {
+			name = *v.Name
+		}
+		if v.Description != nil {
+			description = *v.Description
+		}
+		result = append(result, map[string]interface{}{
+			"name":           name,
+			"description":    description,
+			"dataset":        flattenDataFactoryDatasetReference(v.Dataset),
+			"linked_service": flattenDataFactoryLinkedServiceReference(v.LinkedService),
 		})
 	}
 	return result

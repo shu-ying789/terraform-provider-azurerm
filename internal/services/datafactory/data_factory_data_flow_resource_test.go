@@ -127,14 +127,6 @@ resource "azurerm_data_factory_data_flow" "test" {
     }
   }
 
-  transformation {
-    name        = "filter1"
-    description = "description for filter1"
-    linked_service {
-      name = azurerm_data_factory_linked_custom_service.test.name
-    }
-  }
-
   script = <<EOT
 source(
   allowSchemaDrift: true, 
@@ -171,14 +163,6 @@ resource "azurerm_data_factory_data_flow" "import" {
     name = azurerm_data_factory_data_flow.test.sink.0.name
     linked_service {
       name = azurerm_data_factory_data_flow.test.sink.0.linked_service.0.name
-    }
-  }
-
-  transformation {
-    name        = "filter1"
-    description = "description for filter1"
-    linked_service {
-      name = azurerm_data_factory_linked_custom_service.test.name
     }
   }
 }
