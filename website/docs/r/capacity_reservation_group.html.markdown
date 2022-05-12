@@ -3,20 +3,33 @@ subcategory: "Compute"
 layout: "azurerm"
 page_title: "Azure Resource Manager: azurerm_capacity_reservation_group"
 description: |-
-  Manages a Compute.
+  Manages a Capacity Reservation Group.
 ---
 
 # azurerm_capacity_reservation_group
 
-Manages a Compute.
+Manages a Capacity Reservation Group.
 
 ## Example Usage
 
 ```hcl
+provider "azurerm" {
+  features {}
+}
+
+resource "azurerm_resource_group" "example" {
+  name     = "example"
+  location = "West Europe"
+}
+
 resource "azurerm_capacity_reservation_group" "example" {
   name                = "example"
-  resource_group_name = "example"
-  location            = "West Europe"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  zones               = ["1", "2", "3"]
+  tags = {
+    key = "value1"
+  }
 }
 ```
 
@@ -24,38 +37,37 @@ resource "azurerm_capacity_reservation_group" "example" {
 
 The following arguments are supported:
 
-* `location` - (Required) The Azure Region where the Compute should exist. Changing this forces a new Compute to be created.
+* `location` - (Required) Specifies the supported Azure location where the resource exists. Changing this forces a new resource to be created.
 
-* `name` - (Required) The name which should be used for this Compute. Changing this forces a new Compute to be created.
+* `name` - (Required) The name which should be used for this Capacity Reservation Group. Changing this forces a new Capacity Reservation Group to be created.
 
-* `resource_group_name` - (Required) The name of the Resource Group where the Compute should exist. Changing this forces a new Compute to be created.
+* `resource_group_name` - (Required) The name of the Resource Group where the  Capacity Reservation Group exists.
 
 ---
 
-* `tags` - (Optional) A mapping of tags which should be assigned to the Compute.
+* `tags` - (Optional) A mapping of tags which should be assigned to the Capacity Reservation Group.
 
-* `zones` - (Optional) Specifies a list of TODO.
+* `zones` - (Optional) A list of availability zones.
 
 ## Attributes Reference
 
 In addition to the Arguments listed above - the following Attributes are exported: 
 
-* `id` - The ID of the Compute.
+* `id` - The ID of the Capacity Reservation Group.
 
 ## Timeouts
 
 The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) for certain actions:
 
-* `create` - (Defaults to 30 minutes) Used when creating the Compute.
-* `read` - (Defaults to 5 minutes) Used when retrieving the Compute.
-* `update` - (Defaults to 30 minutes) Used when updating the Compute.
-* `delete` - (Defaults to 30 minutes) Used when deleting the Compute.
+* `create` - (Defaults to 30 minutes) Used when creating the Capacity Reservation Group.
+* `read` - (Defaults to 5 minutes) Used when retrieving the Capacity Reservation Group.
+* `update` - (Defaults to 30 minutes) Used when updating the Capacity Reservation Group.
+* `delete` - (Defaults to 30 minutes) Used when deleting the Capacity Reservation Group.
 
 ## Import
 
-Computes can be imported using the `resource id`, e.g.
+Capacity Reservation Group can be imported using the `resource id`, e.g.
 
 ```shell
-terraform import azurerm_capacity_reservation_group.example C:/Program Files/Git/subscriptions/12345678-1234-9876-4563-123456789012/resourceGroups/group1/providers/Microsoft.Compute/capacityReservationGroups/capacityReservationGroup1
-
+terraform import azurerm_capacity_reservation_group.example /subscriptions/12345678-1234-9876-4563-123456789012/resourceGroups/group1/providers/Microsoft.Compute/capacityReservationGroups/capacityReservationGroup1
 ```

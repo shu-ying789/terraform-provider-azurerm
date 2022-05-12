@@ -2,14 +2,14 @@ package compute
 
 import (
 	"fmt"
-	"github.com/hashicorp/go-azure-helpers/resourcemanager/zones"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-11-01/compute"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonschema"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/location"
+	"github.com/hashicorp/go-azure-helpers/resourcemanager/zones"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-provider-azurerm/helpers/azure"
 	"github.com/hashicorp/terraform-provider-azurerm/helpers/tf"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
@@ -50,11 +50,9 @@ func resourceCapacityReservationGroup() *pluginsdk.Resource {
 
 			"location": azure.SchemaLocation(),
 
-			// There's a bug in the Azure API where this is returned in upper-case
-			// BUG: https://github.com/Azure/azure-rest-api-specs/issues/8068
 			"resource_group_name": azure.SchemaResourceGroupNameDiffSuppress(),
 
-			"zones": commonschema.ZonesMultipleOptional(),
+			"zones": commonschema.ZonesMultipleOptionalForceNew(),
 
 			"tags": tags.Schema(),
 		},
@@ -77,7 +75,7 @@ func resourceCapacityReservationGroupCreateUpdate(d *pluginsdk.ResourceData, met
 			}
 		}
 		if !utils.ResponseWasNotFound(existing.Response) {
-			return tf.ImportAsExistsError("azurerm_dedicated_host_group", id.ID())
+			return tf.ImportAsExistsError("azurerm_capacity_reservation_group", id.ID())
 		}
 	}
 
@@ -117,7 +115,7 @@ func resourceCapacityReservationGroupRead(d *pluginsdk.ResourceData, meta interf
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("reading Capacity Reservation Group %q (: %+v", id.String(), err)
+		return fmt.Errorf("reading %q (: %+v", id.String(), err)
 	}
 
 	d.Set("name", id.Name)
@@ -140,7 +138,7 @@ func resourceCapacityReservationGroupDelete(d *pluginsdk.ResourceData, meta inte
 	}
 
 	if _, err := client.Delete(ctx, id.ResourceGroup, id.Name); err != nil {
-		return fmt.Errorf("deleting Capacity Reservation Group %q : %+v", id.String(), err)
+		return fmt.Errorf("deleting %q : %+v", id.String(), err)
 	}
 
 	return nil

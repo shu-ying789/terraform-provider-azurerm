@@ -30,6 +30,21 @@ func TestAccCapacityReservationGroup_basic(t *testing.T) {
 	})
 }
 
+func TestAccCapacityReservationGroup_requiresImport(t *testing.T) {
+	data := acceptance.BuildTestData(t, "azurerm_capacity_reservation_group", "test")
+	r := CapacityReservationGroupResource{}
+
+	data.ResourceTest(t, r, []acceptance.TestStep{
+		{
+			Config: r.basic(data),
+			Check: acceptance.ComposeTestCheckFunc(
+				check.That(data.ResourceName).ExistsInAzure(r),
+			),
+		},
+		data.RequiresImportErrorStep(r.requiresImport),
+	})
+}
+
 func TestAccCapacityReservationGroup_complete(t *testing.T) {
 	data := acceptance.BuildTestData(t, "azurerm_capacity_reservation_group", "test")
 	r := CapacityReservationGroupResource{}
@@ -76,6 +91,17 @@ resource "azurerm_capacity_reservation_group" "test" {
   location            = azurerm_resource_group.test.location
 }
 `, data.RandomInteger, data.Locations.Primary)
+}
+
+func (r CapacityReservationGroupResource) requiresImport(data acceptance.TestData) string {
+	return fmt.Sprintf(`
+%s
+resource "azurerm_capacity_reservation_group" "import" {
+  resource_group_name         = azurerm_capacity_reservation_group.test.resource_group_name
+  name                        = azurerm_capacity_reservation_group.test.name
+  location                    = azurerm_capacity_reservation_group.test.location
+}
+`, r.basic(data))
 }
 
 func (CapacityReservationGroupResource) complete(data acceptance.TestData) string {
