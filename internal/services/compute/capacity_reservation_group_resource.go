@@ -48,15 +48,15 @@ func resourceCapacityReservationGroup() *pluginsdk.Resource {
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 
+			"resource_group_name": azure.SchemaResourceGroupName(),
+
 			"location": {
 				Type:         pluginsdk.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
-
-			"resource_group_name": azure.SchemaResourceGroupName(),
-
+			
 			"zones": commonschema.ZonesMultipleOptionalForceNew(),
 
 			"tags": tags.Schema(),
