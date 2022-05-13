@@ -44,13 +44,16 @@ func resourceCapacityReservationGroup() *pluginsdk.Resource {
 			"name": {
 				Type:         pluginsdk.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 
-			"location": azure.SchemaLocation(),
+			"location": {
+				Type:         pluginsdk.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
 
-			"resource_group_name": azure.SchemaResourceGroupNameDiffSuppress(),
+			"resource_group_name": commonschema.ResourceGroupNameForDataSource(),
 
 			"zones": commonschema.ZonesMultipleOptionalForceNew(),
 
@@ -115,7 +118,7 @@ func resourceCapacityReservationGroupRead(d *pluginsdk.ResourceData, meta interf
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("reading %q (: %+v", id.String(), err)
+		return fmt.Errorf("reading %q: %+v", id, err)
 	}
 
 	d.Set("name", id.Name)
@@ -138,7 +141,7 @@ func resourceCapacityReservationGroupDelete(d *pluginsdk.ResourceData, meta inte
 	}
 
 	if _, err := client.Delete(ctx, id.ResourceGroup, id.Name); err != nil {
-		return fmt.Errorf("deleting %q : %+v", id.String(), err)
+		return fmt.Errorf("deleting %q: %+v", id, err)
 	}
 
 	return nil

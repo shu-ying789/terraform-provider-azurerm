@@ -47,7 +47,7 @@ The following arguments are supported:
 
 * `tags` - (Optional) A mapping of tags which should be assigned to the Capacity Reservation Group.
 
-* `zones` - (Optional) A list of availability zones.
+* `zones` - (Optional) Specifies a list of Availability Zones in which this Capacity Reservation Group should be located. Changing this forces a newCapacity Reservation Group to be created.
 
 ## Attributes Reference
 
