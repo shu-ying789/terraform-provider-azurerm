@@ -41,13 +41,13 @@ The following arguments are supported:
 
 * `name` - (Required) The name which should be used for this Capacity Reservation Group. Changing this forces a new Capacity Reservation Group to be created.
 
-* `resource_group_name` - (Required) The name of the Resource Group where the  Capacity Reservation Group exists.
+* `resource_group_name` - (Required) The name of the Resource Group where the Capacity Reservation Group exists.
 
 ---
 
 * `tags` - (Optional) A mapping of tags which should be assigned to the Capacity Reservation Group.
 
-* `zones` - (Optional) Specifies a list of Availability Zones in which this Capacity Reservation Group should be located. Changing this forces a newCapacity Reservation Group to be created.
+* `zones` - (Optional) Specifies a list of Availability Zones in which this Capacity Reservation Group should be located. Changing this forces a new Capacity Reservation Group to be created.
 
 ## Attributes Reference
 
