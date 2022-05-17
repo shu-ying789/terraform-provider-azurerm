@@ -47,6 +47,7 @@ func (r Registration) SupportedResources() map[string]*pluginsdk.Resource {
 	resources := map[string]*pluginsdk.Resource{
 		"azurerm_availability_set":                       resourceAvailabilitySet(),
 		"azurerm_capacity_reservation_group":             resourceCapacityReservationGroup(),
+		"azurerm_capacity_reservation":                   resourceCapacityReservation(),
 		"azurerm_dedicated_host":                         resourceDedicatedHost(),
 		"azurerm_dedicated_host_group":                   resourceDedicatedHostGroup(),
 		"azurerm_disk_encryption_set":                    resourceDiskEncryptionSet(),
