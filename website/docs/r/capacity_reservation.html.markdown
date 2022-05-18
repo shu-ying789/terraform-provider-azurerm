@@ -29,10 +29,10 @@ resource "azurerm_capacity_reservation_group" "example" {
 }
 
 resource "azurerm_capacity_reservation" "example" {
-  name                = "example"
-  capacity_reservation_group_id= azurerm_capacity_reservation_group.example.id
-  location            = azurerm_resource_group.example.location
-  zones               = ["1"]
+  name                          = "example"
+  capacity_reservation_group_id = azurerm_capacity_reservation_group.example.id
+  location                      = azurerm_resource_group.example.location
+  zones                         = ["1"]
   sku {
     capacity = 1
     name     = "Standard_D2s_v3"
