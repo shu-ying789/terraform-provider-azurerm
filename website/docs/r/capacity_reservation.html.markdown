@@ -44,7 +44,7 @@ resource "azurerm_capacity_reservation" "example" {
 
 The following arguments are supported:
 
-* `capacity_reservation_group_id` - (Required) The ID of the Capacity Reservation Group where the Capacity Reservation should exist. Changing this forces a new Capacity Reservation to be created.
+* `capacity_reservation_group_id` - (Required) The ID of the Capacity Reservation Group where the Capacity Reservation should exist. Changing this forces a new Capacity Reservation Group to be created.
 
 * `location` - (Required) Specifies the supported Azure location where the resource exists. Changing this forces a new resource to be created.
 
