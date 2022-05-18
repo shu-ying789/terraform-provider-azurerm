@@ -80,7 +80,7 @@ func (r CapacityReservationResource) basic(data acceptance.TestData) string {
 
 resource "azurerm_capacity_reservation" "test" {
   name                = "acctestCR-compute-%d"
-  resource_group_name = azurerm_resource_group.test.name
+  capacity_reservation_group_id= azurerm_capacity_reservation_group.test.id
   location            = azurerm_resource_group.test.location
 }
 `, r.template(data), data.RandomInteger)
@@ -91,7 +91,7 @@ func (r CapacityReservationResource) requiresImport(data acceptance.TestData) st
 %s
 
 resource "azurerm_capacity_reservation" "import" {
-  resource_group_name = azurerm_capacity_reservation.test.resource_group_name
+  capacity_reservation_group_id= azurerm_capacity_reservation_group.test.id
   name                = azurerm_capacity_reservation.test.name
   location            = azurerm_capacity_reservation.test.location
 }
@@ -104,13 +104,8 @@ func (r CapacityReservationResource) complete(data acceptance.TestData) string {
 
 resource "azurerm_capacity_reservation" "test" {
   name                = "acctestCR-compute-%d"
-  resource_group_name = azurerm_resource_group.test.name
+  capacity_reservation_group_id= azurerm_capacity_reservation_group.test.id
   location            = azurerm_resource_group.test.location
-  //zones               = ["1"]
-  //sku = {
-  //    capacity = 1
-  //    name     = "Standard_D2s_v3"
-  //  }
 }
 `, r.template(data), data.RandomInteger)
 }
@@ -124,6 +119,12 @@ provider "azurerm" {
 resource "azurerm_resource_group" "test" {
   name     = "acctestRG-compute-%[1]d"
   location = "%[2]s"
+}
+
+resource "azurerm_capacity_reservation_group" "test" {
+  name                = "acctestCRG-compute-%[1]d"
+  resource_group_name = azurerm_resource_group.test.name
+  location            = azurerm_resource_group.test.location
 }
 `, data.RandomInteger, data.Locations.Primary)
 }

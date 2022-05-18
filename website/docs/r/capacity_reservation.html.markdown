@@ -22,10 +22,16 @@ resource "azurerm_resource_group" "example" {
   location = "West Europe"
 }
 
+resource "azurerm_capacity_reservation_group" "example" {
+  name                = "example"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+}
+
 resource "azurerm_capacity_reservation" "example" {
   name                = "example"
+  capacity_reservation_group_id= azurerm_capacity_reservation_group.example.id
   location            = azurerm_resource_group.example.location
-  resource_group_name = azurerm_resource_group.example.name
   zones               = ["1"]
   sku {
     capacity = 1
@@ -38,17 +44,29 @@ resource "azurerm_capacity_reservation" "example" {
 
 The following arguments are supported:
 
+* `capacity_reservation_group_id` - (Required) The ID of the Capacity Reservation Group where the Capacity Reservation should exist. Changing this forces a new Capacity Reservation to be created.
+
 * `location` - (Required) Specifies the supported Azure location where the resource exists. Changing this forces a new resource to be created.
 
 * `name` - (Required) The name which should be used for this Capacity Reservation. Changing this forces a new Capacity Reservation to be created.
 
-* `resource_group_name` - (Required) The name of the Resource Group where the Capacity Reservation exists.
-
 ---
+
+* `sku` - A `sku` block as documented below.
 
 * `tags` - (Optional) A mapping of tags which should be assigned to the Capacity Reservation.
 
 * `zones` - (Optional) Specifies a list of Availability Zones in which this Capacity Reservation should be located. Changing this forces a new Capacity Reservation to be created.
+
+---
+
+A `sku` block exports the following:
+
+* `capacity` - Specifies the number of units associated with this Capacity Reservation service.
+
+* `name` - Specifies the plan's pricing tier.
+
+---
 
 ## Attributes Reference
 
@@ -70,6 +88,5 @@ The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/d
 Capacity Reservation can be imported using the `resource id`, e.g.
 
 ```shell
-terraform import azurerm_capacity_reservation.example /subscriptions/12345678-1234-9876-4563-123456789012/resourceGroups/group1/providers/Microsoft.Compute/capacityReservationGroups/capacityReservationGroup1
-
+terraform import azurerm_capacity_reservation.example /subscriptions/12345678-1234-9876-4563-123456789012/resourceGroups/group1/providers/Microsoft.Compute/capacityReservationGroups/capacityReservationGroup1/capacityReservations/capacityReservation1
 ```

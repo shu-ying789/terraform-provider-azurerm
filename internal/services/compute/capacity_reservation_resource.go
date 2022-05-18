@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-provider-azurerm/helpers/tf"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/compute/parse"
+	"github.com/hashicorp/terraform-provider-azurerm/internal/services/compute/validate"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tags"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/validation"
@@ -45,16 +46,14 @@ func resourceCapacityReservation() *pluginsdk.Resource {
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 
-			"location": azure.SchemaLocation(),
-
-			"resource_group_name": azure.SchemaResourceGroupName(),
-
-			"capacity_name": {
+			"capacity_reservation_group_id": {
 				Type:         pluginsdk.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.StringIsNotEmpty,
+				ValidateFunc: validate.CapacityReservationGroupID,
 			},
+
+			"location": azure.SchemaLocation(),
 
 			"sku": {
 				Type:     pluginsdk.TypeList,
@@ -94,7 +93,11 @@ func resourceCapacityReservationCreateUpdate(d *pluginsdk.ResourceData, meta int
 	ctx, cancel := timeouts.ForCreate(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
-	id := parse.NewCapacityReservationID(subscriptionId, d.Get("resource_group_name").(string), d.Get("capacity_name").(string), d.Get("name").(string))
+	capacityId, err := parse.CapacityReservationGroupID(d.Get("capacity_reservation_group_id").(string))
+	if err != nil {
+		return err
+	}
+	id := parse.NewCapacityReservationID(subscriptionId, capacityId.ResourceGroup, d.Get("name").(string), "")
 
 	if d.IsNewResource() {
 		existing, err := client.Get(ctx, id.ResourceGroup, id.CapacityReservationGroupName, id.Name, "")
@@ -148,8 +151,7 @@ func resourceCapacityReservationRead(d *pluginsdk.ResourceData, meta interface{}
 	}
 
 	d.Set("name", id.Name)
-	d.Set("resource_group_name", id.ResourceGroup)
-	d.Set("capacity_name", id.CapacityReservationGroupName)
+	d.Set("capacity_reservation_group_id", parse.NewCapacityReservationGroupID(id.SubscriptionId, id.ResourceGroup, id.Name).ID())
 	d.Set("location", location.NormalizeNilable(resp.Location))
 
 	d.Set("zones", resp.Zones)
@@ -179,9 +181,13 @@ func resourceCapacityReservationDelete(d *pluginsdk.ResourceData, meta interface
 }
 
 func expandCapacityReservationSku(input []interface{}) *compute.Sku {
+	if len(input) == 0 {
+		return nil
+	}
+
 	raw := input[0].(map[string]interface{})
 	return &compute.Sku{
-		Tier:     utils.String("Standard"),
+		Tier:     utils.String(raw["tier"].(string)),
 		Name:     utils.String(raw["name"].(string)),
 		Capacity: utils.Int64(int64(raw["capacity"].(int))),
 	}
