@@ -57,13 +57,14 @@ func resourceCapacityReservation() *pluginsdk.Resource {
 
 			"sku": {
 				Type:     pluginsdk.TypeList,
-				Optional: true,
+				Required: true,
 				MaxItems: 1,
 				Elem: &pluginsdk.Resource{
 					Schema: map[string]*pluginsdk.Schema{
 						"name": {
-							Type:     pluginsdk.TypeString,
-							Required: true,
+							Type:         pluginsdk.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringIsNotEmpty,
 						},
 
 						"tier": {
@@ -73,8 +74,9 @@ func resourceCapacityReservation() *pluginsdk.Resource {
 						},
 
 						"capacity": {
-							Type:     pluginsdk.TypeInt,
-							Required: true,
+							Type:         pluginsdk.TypeInt,
+							Required:     true,
+							ValidateFunc: validation.IntBetween(0, 100),
 						},
 					},
 				},
@@ -93,11 +95,11 @@ func resourceCapacityReservationCreateUpdate(d *pluginsdk.ResourceData, meta int
 	ctx, cancel := timeouts.ForCreate(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
-	capacityId, err := parse.CapacityReservationGroupID(d.Get("capacity_reservation_group_id").(string))
+	groupId, err := parse.CapacityReservationGroupID(d.Get("capacity_reservation_group_id").(string))
 	if err != nil {
 		return err
 	}
-	id := parse.NewCapacityReservationID(subscriptionId, capacityId.ResourceGroup, d.Get("name").(string), "")
+	id := parse.NewCapacityReservationID(subscriptionId, groupId.ResourceGroup, groupId.Name, d.Get("name").(string))
 
 	if d.IsNewResource() {
 		existing, err := client.Get(ctx, id.ResourceGroup, id.CapacityReservationGroupName, id.Name, "")
@@ -151,7 +153,7 @@ func resourceCapacityReservationRead(d *pluginsdk.ResourceData, meta interface{}
 	}
 
 	d.Set("name", id.Name)
-	d.Set("capacity_reservation_group_id", parse.NewCapacityReservationGroupID(id.SubscriptionId, id.ResourceGroup, id.Name).ID())
+	d.Set("capacity_reservation_group_id", parse.NewCapacityReservationGroupID(id.SubscriptionId, id.ResourceGroup, id.CapacityReservationGroupName).ID())
 	d.Set("location", location.NormalizeNilable(resp.Location))
 
 	d.Set("zones", resp.Zones)
@@ -176,7 +178,7 @@ func resourceCapacityReservationDelete(d *pluginsdk.ResourceData, meta interface
 	if _, err := client.Delete(ctx, id.ResourceGroup, id.CapacityReservationGroupName, id.Name); err != nil {
 		return fmt.Errorf("deleting %q: %+v", id, err)
 	}
-
+	time.Sleep(time.Minute * 2)
 	return nil
 }
 

@@ -82,6 +82,12 @@ resource "azurerm_capacity_reservation" "test" {
   name                = "acctestCR-compute-%d"
   capacity_reservation_group_id= azurerm_capacity_reservation_group.test.id
   location            = azurerm_resource_group.test.location
+  zones               = ["1"]
+
+  sku  {
+      capacity = 1
+      name     = "Standard_D2s_v3"
+    }
 }
 `, r.template(data), data.RandomInteger)
 }
@@ -94,6 +100,12 @@ resource "azurerm_capacity_reservation" "import" {
   capacity_reservation_group_id= azurerm_capacity_reservation_group.test.id
   name                = azurerm_capacity_reservation.test.name
   location            = azurerm_capacity_reservation.test.location
+  zones               = ["1"]
+
+  sku  {
+      capacity = 1
+      name     = "Standard_D2s_v3"
+    }
 }
 `, r.basic(data))
 }
@@ -106,6 +118,12 @@ resource "azurerm_capacity_reservation" "test" {
   name                = "acctestCR-compute-%d"
   capacity_reservation_group_id= azurerm_capacity_reservation_group.test.id
   location            = azurerm_resource_group.test.location
+  zones               = ["1"]
+
+  sku  {
+      capacity = 1
+      name     = "Standard_D2s_v3"
+    }
 }
 `, r.template(data), data.RandomInteger)
 }
@@ -125,6 +143,7 @@ resource "azurerm_capacity_reservation_group" "test" {
   name                = "acctestCRG-compute-%[1]d"
   resource_group_name = azurerm_resource_group.test.name
   location            = azurerm_resource_group.test.location
+  zones               = ["1", "2", "3"]
 }
 `, data.RandomInteger, data.Locations.Primary)
 }

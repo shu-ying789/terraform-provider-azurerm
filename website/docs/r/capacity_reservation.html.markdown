@@ -19,7 +19,7 @@ provider "azurerm" {
 
 resource "azurerm_resource_group" "example" {
   name     = "example"
-  location = "West Europe"
+  location = "eastus"
 }
 
 resource "azurerm_capacity_reservation_group" "example" {
