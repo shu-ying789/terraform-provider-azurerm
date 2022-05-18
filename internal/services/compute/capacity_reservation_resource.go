@@ -76,7 +76,7 @@ func resourceCapacityReservation() *pluginsdk.Resource {
 						"capacity": {
 							Type:         pluginsdk.TypeInt,
 							Required:     true,
-							ValidateFunc: validation.IntBetween(0, 100),
+							ValidateFunc: validation.IntAtLeast(0),
 						},
 					},
 				},
