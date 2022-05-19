@@ -119,34 +119,34 @@ func resourceDataFactoryDataFlowCreateUpdate(d *pluginsdk.ResourceData, meta int
 		}
 	}
 
-	flowLet := datafactory.Flowlet{
-		FlowletTypeProperties: &datafactory.FlowletTypeProperties{
+	mappingDataFlow := datafactory.MappingDataFlow{
+		MappingDataFlowTypeProperties: &datafactory.MappingDataFlowTypeProperties{
 			Script:          utils.String(d.Get("script").(string)),
 			Sinks:           expandDataFactoryDataFlowSink(d.Get("sink").([]interface{})),
 			Sources:         expandDataFactoryDataFlowSource(d.Get("source").([]interface{})),
 			Transformations: expandDataFactoryDataFlowTransformation(d.Get("transformation").([]interface{})),
 		},
 		Description: utils.String(d.Get("description").(string)),
-		Type:        datafactory.TypeBasicDataFlowTypeFlowlet,
+		Type:        datafactory.TypeBasicDataFlowTypeMappingDataFlow,
 	}
 
 	if v, ok := d.GetOk("annotations"); ok {
 		annotations := v.([]interface{})
-		flowLet.Annotations = &annotations
+		mappingDataFlow.Annotations = &annotations
 	}
 
 	if v, ok := d.GetOk("folder"); ok {
-		flowLet.Folder = &datafactory.DataFlowFolder{
+		mappingDataFlow.Folder = &datafactory.DataFlowFolder{
 			Name: utils.String(v.(string)),
 		}
 	}
 
 	if v, ok := d.GetOk("script_lines"); ok {
-		flowLet.ScriptLines = utils.ExpandStringSlice(v.([]interface{}))
+		mappingDataFlow.ScriptLines = utils.ExpandStringSlice(v.([]interface{}))
 	}
 
 	dataFlow := datafactory.DataFlowResource{
-		Properties: &flowLet,
+		Properties: &mappingDataFlow,
 	}
 
 	if _, err := client.CreateOrUpdate(ctx, id.ResourceGroup, id.FactoryName, id.Name, dataFlow, ""); err != nil {
@@ -178,26 +178,26 @@ func resourceDataFactoryDataFlowRead(d *pluginsdk.ResourceData, meta interface{}
 		return fmt.Errorf("retrieving %s: %+v", id, err)
 	}
 
-	flowLet, ok := resp.Properties.AsFlowlet()
+	mappingDataFlow, ok := resp.Properties.AsMappingDataFlow()
 	if !ok {
-		return fmt.Errorf("classifying type of %s: Expected: %q", id, datafactory.TypeBasicDataFlowTypeFlowlet)
+		return fmt.Errorf("classifying type of %s: Expected: %q", id, datafactory.TypeBasicDataFlowTypeMappingDataFlow)
 	}
 
 	d.Set("name", id.Name)
 	d.Set("data_factory_id", parse.NewDataFactoryID(id.SubscriptionId, id.ResourceGroup, id.FactoryName).ID())
-	d.Set("description", flowLet.Description)
+	d.Set("description", mappingDataFlow.Description)
 
-	if err := d.Set("annotations", flattenDataFactoryAnnotations(flowLet.Annotations)); err != nil {
+	if err := d.Set("annotations", flattenDataFactoryAnnotations(mappingDataFlow.Annotations)); err != nil {
 		return fmt.Errorf("setting `annotations`: %+v", err)
 	}
 
 	folder := ""
-	if flowLet.Folder != nil && flowLet.Folder.Name != nil {
-		folder = *flowLet.Folder.Name
+	if mappingDataFlow.Folder != nil && mappingDataFlow.Folder.Name != nil {
+		folder = *mappingDataFlow.Folder.Name
 	}
 	d.Set("folder", folder)
 
-	if prop := flowLet.FlowletTypeProperties; prop != nil {
+	if prop := mappingDataFlow.MappingDataFlowTypeProperties; prop != nil {
 		d.Set("script", prop.Script)
 		d.Set("script_lines", prop.ScriptLines)
 
