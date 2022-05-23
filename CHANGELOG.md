@@ -1,8 +1,17 @@
 ## 3.6.0 (Unreleased)
 
+FEATURES:
+
+* **New Resource**: `azurerm_managed_disk_sas_token` [GH-15558]
+* **New Resource**: `azurerm_spring_cloud_gateway` [GH-16175]
+ 
 ENHANCEMENTS:
 
+* `azurerm_kubernetes_cluster_node_pool` - the property `node_labels` can now be updated [GH-16360]
+* `azurerm_kubernetes_cluster` - the property `default_node_pool.node_labels` can now be updated [GH-16360]
 * `azurerm_storage_share` - add `access_tier` attribute [GH-16462]
+* `azurerm_snapshot` - support for the `trusted_launch_enabled` propertyu [GH-16679]
+* `azurerm_stream_analytics_function_javascript_udf` - support for the `input.configuration_parameter` property [GH-16579]
 
 ## 3.5.0 (May 05, 2022)
 
