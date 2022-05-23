@@ -153,6 +153,11 @@ func resourceDataFactoryTriggerSchedule() *pluginsdk.Resource {
 				ValidateFunc:     validation.IsRFC3339Time, // times in the past just start immediately
 			},
 
+			"time_zone": {
+				Type:     pluginsdk.TypeString,
+				Optional: true,
+			},
+
 			"frequency": {
 				Type:     pluginsdk.TypeString,
 				Optional: true,
@@ -234,6 +239,7 @@ func resourceDataFactoryTriggerScheduleCreate(d *pluginsdk.ResourceData, meta in
 			Frequency: datafactory.RecurrenceFrequency(d.Get("frequency").(string)),
 			Interval:  utils.Int32(int32(d.Get("interval").(int))),
 			Schedule:  expandDataFactorySchedule(d.Get("schedule").([]interface{})),
+			TimeZone:  utils.String(d.Get("time_zone").(string)),
 		},
 	}
 
@@ -323,6 +329,7 @@ func resourceDataFactoryTriggerScheduleUpdate(d *pluginsdk.ResourceData, meta in
 			Frequency: datafactory.RecurrenceFrequency(d.Get("frequency").(string)),
 			Interval:  utils.Int32(int32(d.Get("interval").(int))),
 			Schedule:  expandDataFactorySchedule(d.Get("schedule").([]interface{})),
+			TimeZone:  utils.String(d.Get("time_zone").(string)),
 		},
 	}
 
@@ -423,6 +430,7 @@ func resourceDataFactoryTriggerScheduleRead(d *pluginsdk.ResourceData, meta inte
 			}
 			d.Set("frequency", recurrence.Frequency)
 			d.Set("interval", recurrence.Interval)
+			d.Set("time_zone", recurrence.TimeZone)
 
 			if schedule := recurrence.Schedule; schedule != nil {
 				d.Set("schedule", flattenDataFactorySchedule(schedule))
