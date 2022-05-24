@@ -154,8 +154,9 @@ func resourceDataFactoryTriggerSchedule() *pluginsdk.Resource {
 			},
 
 			"time_zone": {
-				Type:     pluginsdk.TypeString,
-				Optional: true,
+				Type:         pluginsdk.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 
 			"frequency": {
