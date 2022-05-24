@@ -49,13 +49,6 @@ func TestAccDataFactoryTriggerSchedule_complete(t *testing.T) {
 			),
 		},
 		data.ImportStep(),
-		{
-			Config: r.complete(data),
-			Check: acceptance.ComposeTestCheckFunc(
-				check.That(data.ResourceName).ExistsInAzure(r),
-			),
-		},
-		data.ImportStep(),
 	})
 }
 
@@ -140,48 +133,6 @@ resource "azurerm_data_factory_trigger_schedule" "test" {
 }
 
 func (TriggerScheduleResource) update(data acceptance.TestData) string {
-	return fmt.Sprintf(`
-provider "azurerm" {
-  features {}
-}
-
-resource "azurerm_resource_group" "test" {
-  name     = "acctestRG-df-%[1]d"
-  location = "%[2]s"
-}
-
-resource "azurerm_data_factory" "test" {
-  name                = "acctestdf%[1]d"
-  location            = azurerm_resource_group.test.location
-  resource_group_name = azurerm_resource_group.test.name
-}
-
-resource "azurerm_data_factory_pipeline" "test" {
-  name            = "acctest%[1]d"
-  data_factory_id = azurerm_data_factory.test.id
-
-  parameters = {
-    test = "testparameter"
-  }
-}
-
-resource "azurerm_data_factory_trigger_schedule" "test" {
-  name                = "acctestdf%[1]d"
-  data_factory_id     = azurerm_data_factory.test.id
-  pipeline_name       = azurerm_data_factory_pipeline.test.name
-  description         = "test"
-  pipeline_parameters = azurerm_data_factory_pipeline.test.parameters
-  annotations         = ["test5"]
-  frequency           = "Day"
-  interval            = 5
-  activated           = true
-  end_time            = "2022-09-22T00:00:00Z"
-  start_time          = "2022-09-21T00:00:00Z"
-}
-`, data.RandomInteger, data.Locations.Primary)
-}
-
-func (TriggerScheduleResource) complete(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 provider "azurerm" {
   features {}
