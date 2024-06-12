@@ -1,10 +1,8 @@
 package netapp
 
 import (
-	"context"
 	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/netapp/mgmt/2021-10-01/netapp"
@@ -150,42 +148,13 @@ func resourceNetAppSnapshotDelete(d *pluginsdk.ResourceData, meta interface{}) e
 		return err
 	}
 
-	if _, err = client.Delete(ctx, id.ResourceGroup, id.NetAppAccountName, id.CapacityPoolName, id.VolumeName, id.Name); err != nil {
+	future, err := client.Delete(ctx, id.ResourceGroup, id.NetAppAccountName, id.CapacityPoolName, id.VolumeName, id.Name)
+	if err != nil {
 		return fmt.Errorf("deleting NetApp Snapshot %q (Resource Group %q): %+v", id.Name, id.ResourceGroup, err)
 	}
-
-	// The resource NetApp Snapshot depends on the resource NetApp Volume.
-	// Although the delete API returns 404 which means the NetApp Snapshot resource has been deleted.
-	// Then it tries to immediately delete NetApp Volume but it still throws error `Can not delete resource before nested resources are deleted.`
-	// In this case we're going to re-check status code again.
-	// For more details, see related Bug: https://github.com/Azure/azure-sdk-for-go/issues/11475
-	log.Printf("[DEBUG] Waiting for NetApp Snapshot %q (Resource Group %q) to be deleted", id.Name, id.ResourceGroup)
-	stateConf := &pluginsdk.StateChangeConf{
-		ContinuousTargetOccurence: 5,
-		Delay:                     10 * time.Second,
-		MinTimeout:                10 * time.Second,
-		Pending:                   []string{"200", "202"},
-		Target:                    []string{"204", "404"},
-		Refresh:                   netappSnapshotDeleteStateRefreshFunc(ctx, client, id.ResourceGroup, id.NetAppAccountName, id.CapacityPoolName, id.VolumeName, id.Name),
-		Timeout:                   d.Timeout(pluginsdk.TimeoutDelete),
-	}
-
-	if _, err := stateConf.WaitForStateContext(ctx); err != nil {
-		return fmt.Errorf("waiting for NetApp Snapshot %q (Resource Group %q) to be deleted: %+v", id.Name, id.ResourceGroup, err)
+	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
+		return fmt.Errorf("waiting for deletion of %q: %+v", id, err)
 	}
 
 	return nil
-}
-
-func netappSnapshotDeleteStateRefreshFunc(ctx context.Context, client *netapp.SnapshotsClient, resourceGroupName string, accountName string, poolName string, volumeName string, name string) pluginsdk.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		res, err := client.Get(ctx, resourceGroupName, accountName, poolName, volumeName, name)
-		if err != nil {
-			if !utils.ResponseWasNotFound(res.Response) {
-				return nil, "", fmt.Errorf("retrieving NetApp Snapshot %q (Resource Group %q): %s", name, resourceGroupName, err)
-			}
-		}
-
-		return res, strconv.Itoa(res.StatusCode), nil
-	}
 }
