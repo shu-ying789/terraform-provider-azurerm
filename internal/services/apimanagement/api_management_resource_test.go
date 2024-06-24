@@ -1224,7 +1224,7 @@ resource "azurerm_api_management" "test" {
   publisher_email           = "pub1@email.com"
   notification_sender_email = "notification@email.com"
 
-  sku_name = "Premium_2"
+  sku_name = "Premium_1"
 
   additional_location {
     location = azurerm_resource_group.test2.location
