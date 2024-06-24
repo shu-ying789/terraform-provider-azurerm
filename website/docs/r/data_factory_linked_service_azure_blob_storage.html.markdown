@@ -152,6 +152,8 @@ A `service_principal_linked_key_vault_key` block supports the following:
 
 * `storage_kind` - (Optional) Specify the kind of the storage account. Allowed values are `Storage`, `StorageV2`, `BlobStorage` and `BlockBlobStorage`.
 
+* `storage_kind` - (Optional) Specify the kind of the storage account. Allowed values are `Storage`, `StorageV2`, `BlobStorage` and `BlockBlobStorage`.
+
 * `tenant_id` - (Optional) The tenant id or name in which to authenticate against the Azure Blob Storage account.
 
 ## Attributes Reference
