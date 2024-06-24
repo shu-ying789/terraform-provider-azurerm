@@ -62,7 +62,7 @@ func resourceSynapseWorkspaceSqlAADAdmin() *pluginsdk.Resource {
 }
 
 func resourceSynapseWorkspaceSqlAADAdminCreateUpdate(d *pluginsdk.ResourceData, meta interface{}) error {
-	client := meta.(*clients.Client).Synapse.WorkspaceAadAdminsClient
+	client := meta.(*clients.Client).Synapse.WorkspaceSQLAadAdminsClient
 	ctx, cancel := timeouts.ForCreate(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
@@ -98,7 +98,7 @@ func resourceSynapseWorkspaceSqlAADAdminCreateUpdate(d *pluginsdk.ResourceData, 
 }
 
 func resourceSynapseWorkspaceSqlAADAdminRead(d *pluginsdk.ResourceData, meta interface{}) error {
-	client := meta.(*clients.Client).Synapse.WorkspaceAadAdminsClient
+	client := meta.(*clients.Client).Synapse.WorkspaceSQLAadAdminsClient
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
@@ -125,7 +125,7 @@ func resourceSynapseWorkspaceSqlAADAdminRead(d *pluginsdk.ResourceData, meta int
 }
 
 func resourceSynapseWorkspaceSqlAADAdminDelete(d *pluginsdk.ResourceData, meta interface{}) error {
-	client := meta.(*clients.Client).Synapse.WorkspaceAadAdminsClient
+	client := meta.(*clients.Client).Synapse.WorkspaceSQLAadAdminsClient
 	ctx, cancel := timeouts.ForDelete(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 

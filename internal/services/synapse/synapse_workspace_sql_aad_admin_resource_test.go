@@ -36,7 +36,7 @@ func (r SynapseWorkspaceSqlAADAdminResource) Exists(ctx context.Context, client 
 		return nil, err
 	}
 
-	resp, err := client.Synapse.WorkspaceAadAdminsClient.Get(ctx, id.ResourceGroup, id.WorkspaceName)
+	resp, err := client.Synapse.WorkspaceSQLAadAdminsClient.Get(ctx, id.ResourceGroup, id.WorkspaceName)
 	if err != nil {
 		if utils.ResponseWasNotFound(resp.Response) {
 			return utils.Bool(false), nil
