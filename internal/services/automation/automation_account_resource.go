@@ -82,6 +82,11 @@ func resourceAutomationAccount() *pluginsdk.Resource {
 				Optional: true,
 				Default:  true,
 			},
+			"public_network_access_enabled": {
+				Type:     pluginsdk.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
 		},
 	}
 }
