@@ -302,6 +302,9 @@ func resourceNetAppSnapshotPolicyUpdate(d *pluginsdk.ResourceData, meta interfac
 	if err != nil {
 		return fmt.Errorf("updating NetApp SnapshotPolicy %q (Resource Group %q): %+v", name, resourceGroup, err)
 	}
+	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
+		return fmt.Errorf("waiting for update of %q(Resource Group %q): %+v", name, resourceGroup, err)
+	}
 
 	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
 		return fmt.Errorf("waiting for creation/update of %q (Resource Group %q): %+v", name, resourceGroup, err)
@@ -369,6 +372,9 @@ func resourceNetAppSnapshotPolicyDelete(d *pluginsdk.ResourceData, meta interfac
 	future, err := client.Delete(ctx, id.ResourceGroup, id.NetAppAccountName, id.Name)
 	if err != nil {
 		return fmt.Errorf("deleting NetApp Snapshot Policy %q (Resource Group %q): %+v", id.Name, id.ResourceGroup, err)
+	}
+	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
+		return fmt.Errorf("waiting for deletion of %q: %+v", id, err)
 	}
 
 	log.Printf("[DEBUG] Waiting for NetApp SnapshotPolicy Provisioning Service %q (Resource Group %q) to be deleted", id.Name, id.ResourceGroup)
