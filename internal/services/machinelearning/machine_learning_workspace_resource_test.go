@@ -509,6 +509,9 @@ func (r WorkspaceResource) template(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 provider "azurerm" {
   features {
+    resource_group {
+              prevent_deletion_if_contains_resources = false
+            }
     key_vault {
       purge_soft_delete_on_destroy       = false
       purge_soft_deleted_keys_on_destroy = false
@@ -520,7 +523,7 @@ data "azurerm_client_config" "current" {}
 
 resource "azurerm_resource_group" "test" {
   name     = "acctestRG-ml-%[1]d"
-  location = "%[2]s"
+  location = "westus"
 }
 
 resource "azurerm_application_insights" "test" {
